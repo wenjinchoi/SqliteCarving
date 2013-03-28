@@ -7,12 +7,15 @@
 //
 
 #include <iostream>
+#include "CellParser.h"
 
 int main(int argc, const char * argv[])
 {
 
     // insert code here...
-    std::cout << "Hello, World!\n";
+    // testParseVarint();
+    testo();
+    // std::cout << "Hello, World!\n";
     return 0;
 }
 
