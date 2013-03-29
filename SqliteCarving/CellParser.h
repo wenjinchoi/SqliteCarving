@@ -11,10 +11,10 @@
 
 #include <iostream>
 #include <string>
+
 using std::string;
 
 void testo();
-void testParseVarint();
 
 class SqliteCarving {
 public:
@@ -22,9 +22,7 @@ public:
     ~SqliteCarving();
     
     void setFile(const string sqliteFile);
-    
     void setParameters(const int sqlitePageSize);
-    
     void carve();
 
 private:

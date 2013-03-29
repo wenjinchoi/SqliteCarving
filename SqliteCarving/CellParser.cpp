@@ -7,6 +7,7 @@
 //
 
 #include "CellParser.h"
+#include "utils.h"
 
 #include <bitset>
 #include <vector>
@@ -16,21 +17,24 @@
 
 using namespace std;
 
+// SQL Type
 const int SQL_TYPE_INT = 1;
 const int SQL_TYPE_TEXT = 2;
 const int SQL_TYPE_FLOAT = 4;
 const int SQL_TYPE_BLOB = 8;
 const int SQL_TYPE_NULL = 16;
 
-const int STYPE_NULL = 0;
-const int STYPE_INT8 = 1;
-const int STYPE_INT16 = 2;
-const int STYPE_INT24 = 3;
-const int STYPE_INT32 = 4;
-const int STYPE_INT48 = 5;
-const int STYPE_INT64 = 6;
-const int STYPE_FLOAT = 7;
-const int STYPE_CONST0 = 8;
+// Column Type
+//                             含义         数据宽度(字节数)
+const int STYPE_NULL = 0;   // NULL        0
+const int STYPE_INT8 = 1;   // signed int  1
+const int STYPE_INT16 = 2;  // signed int  2
+const int STYPE_INT24 = 3;  // signed int  3
+const int STYPE_INT32 = 4;  // signed int  4
+const int STYPE_INT48 = 5;  // signed int  6
+const int STYPE_INT64 = 6;  // signed int  8
+const int STYPE_FLOAT = 7;  // IEEE float  8
+const int STYPE_CONST0 = 8; 
 const int STYPE_CONST1 = 9;
 
 namespace  {
@@ -53,9 +57,6 @@ void build_map()
     stypeSqlTypeMap.insert(make_pair(STYPE_CONST1, make_pair(SQL_TYPE_INT, 0)));
 }
 
- 
-typedef pair<int, unsigned> varint;
-
 const unsigned char testdata[] = {
     0x2B, 0x01, 0x12, 0x00, 0x01, 0x17, 0x00, 0x04,
     0x00, 0x01, 0x01, 0x01, 0x00, 0x00, 0x1D, 0x00,
@@ -65,77 +66,21 @@ const unsigned char testdata[] = {
     0x31, 0x00, 0x00, 0x00, 0x00
 };
 
+ 
+typedef pair<int, unsigned> varint;
+typedef vector<unsigned char> vec_uchar;
 
-// walk max 9 bytes, while the MSB is 1, add the last 7 LSB's to the integer
-pair<int, unsigned long> parseVarint(vector<unsigned char> varintBytes, int offset=0) {
-    vector<unsigned char>::iterator pos = varintBytes.begin() + offset;
-    vector<unsigned char> viBytes(pos, varintBytes.end());
-    unsigned long value = 0;
-    bool isCompleted = false;
-    int byte_num = 0;
-    while (byte_num < 9 && byte_num < viBytes.size() && !isCompleted) {
-        uint8_t viByte = uint8_t(viBytes[byte_num]);
-        bitset<8> b(viBytes[byte_num]);
-        // not the last varint byte
-        if (b.test(7) && byte_num < 8)
-        {
-            value = (value << 7) | (viByte & 0b01111111);
-        }
-        // last one, stop and finalyze the integer
-        else if (b.test(7) && byte_num == 8)
-        {
-            value = (value << 8) | (viByte);
-            isCompleted = true;
-        }
-        // the end of the varint
-        else
-        {
-            value= (value << 7) | (viByte & 0b01111111);
-            isCompleted = true;
-        }
-        byte_num += 1;
-    }
-    if (isCompleted) {
-        return make_pair(byte_num, value);
-    }
-    else
-    {
-        return make_pair(0, 0);
-    }
-}
-
-void testParseVarint() {
-    
-    vector<unsigned char> td1;
-    td1.push_back(0x2B);
-    td1.push_back(0x01);
-    
-    pair<int, unsigned long> r = ::parseVarint(td1, 0);
-    cout << "first: " << r.first << " second: " << r.second << endl;
-    
-    vector<unsigned char> td2;
-    td2.push_back(0x81);
-    td2.push_back(0x00);
-    r = ::parseVarint(td2, 0);
-    cout << "first: " << r.first << " second: " << r.second << endl;
-    
-    vector<unsigned char> td3;
-    td3.push_back(0x50);
-    td3.push_back(0xE2); 
-    td3.push_back(0x43);
-    td3.push_back(0x20);
-    
-}
-
-bool isOdd(int num)
-{
-    return bool(num & 1);
-}
 
 struct ColumnType {
-    int sType;
-    int colType;
+    int sType;    // Type value  sType col 1 (varint) ... col N (varint)
+    int colType;  // Column Type
+    int size;     // Data Length
+};
+
+struct ColSizeValue
+{
     int size;
+    string value;
 };
 
 ColumnType make_columnType(int sType) {
@@ -166,19 +111,14 @@ ColumnType make_columnType(int sType) {
     return columnType;
 }
 
-struct ColSizeValue
-{
-    int size;
-    string value;
-};
-
-
-ColSizeValue parseColumeValue (ColumnType columnType, vector<unsigned char> playloadContect, int offset)
+ColSizeValue parseColumeValue (ColumnType columnType,
+                               vec_uchar playloadContent,
+                               int offset)
 {
     ColSizeValue colSizeVal;
     colSizeVal.size = -1;
     colSizeVal.value = "";
-    vector<unsigned char>::iterator pos = playloadContect.begin();
+    vec_uchar::iterator pos = playloadContent.begin() + offset;
     switch (columnType.sType) {
         case STYPE_NULL:
             colSizeVal.size = 0;
@@ -186,7 +126,7 @@ ColSizeValue parseColumeValue (ColumnType columnType, vector<unsigned char> play
             break;
         case STYPE_INT8:
             colSizeVal.size = 1;
-            colSizeVal.value = to_string(*playloadContect.begin());
+            colSizeVal.value = to_string(*pos);
             break;
         case STYPE_INT16:
             colSizeVal.size = 2;
@@ -239,7 +179,7 @@ ColSizeValue parseColumeValue (ColumnType columnType, vector<unsigned char> play
     return colSizeVal;
 }
 
-void parseTableLeafCellPlayload(vector<unsigned char> playloadContent)
+void parseTableLeafCellPlayload(vec_uchar playloadContent)
 {
     int playloadOffset = 0;
     vector<ColumnType> cols;
@@ -255,7 +195,7 @@ void parseTableLeafCellPlayload(vector<unsigned char> playloadContent)
     
     while (playloadOffset < headerSize.second) {
         varint sType = parseVarint(playloadContent, playloadOffset);
-        cols.push_back(make_columnType(sType1.second));
+        cols.push_back(make_columnType(sType.second));
         cout << "sType: " << sType.second << endl;
         playloadOffset += sType.first;
     }
@@ -269,7 +209,7 @@ void parseTableLeafCellPlayload(vector<unsigned char> playloadContent)
     }
 }
     
-void parseTableLeafCell(vector<unsigned char> cellContent)
+void parseTableLeafCell(vec_uchar cellContent)
 {
     int cellOffset = 0;
     varint playloadSize = parseVarint(cellContent, cellOffset);
@@ -289,9 +229,9 @@ void parseTableLeafCell(vector<unsigned char> cellContent)
     }
     else
     {
-        vector<unsigned char>::iterator pos_start = cellContent.begin() + cellOffset;
-        vector<unsigned char>::iterator pos_end = cellContent.begin() + playloadSize.second;
-        vector<unsigned char> playloadContent(pos_start, pos_end);
+        vec_uchar::iterator pos_start = cellContent.begin() + cellOffset;
+        vec_uchar::iterator pos_end = cellContent.begin() + playloadSize.second;
+        vec_uchar playloadContent(pos_start, pos_end);
         parseTableLeafCellPlayload(playloadContent);
     }
     cout << "Parsing cell done." << endl;
@@ -302,7 +242,7 @@ void parseTableLeafCell(vector<unsigned char> cellContent)
 void testo()
 {
     int length = sizeof(testdata)/sizeof(unsigned char);
-    vector<unsigned char> vtd;
+    vec_uchar vtd;
     for (int i = 0; i < length; ++i) {
         vtd.push_back(testdata[i]);
     }
