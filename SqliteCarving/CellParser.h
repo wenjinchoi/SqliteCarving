@@ -18,15 +18,21 @@ void testParseVarint();
 
 class SqliteCarving {
 public:
-    void setFile(const string sqliteFile);
-    void setParameters(const int sqlitePageSize);
-    void carve();
-private:
-    int sqlitePageSize_;
+    SqliteCarving();
+    ~SqliteCarving();
     
+    void setFile(const string sqliteFile);
+    
+    void setParameters(const int sqlitePageSize);
+    
+    void carve();
+
+private:
     void parseTableLeafCell();
     void parseTableLeafCellPlayload();
     void parseColumnValue();
+    
+    int sqlitePageSize_;
 };
 
 #endif /* defined(__SqliteCarving__CellParser__) */

@@ -142,6 +142,7 @@ ColumnType make_columnType(int sType) {
     ColumnType columnType;
     columnType.sType = sType;
     StypeSqlTypeMap::iterator pos;
+    build_map();
     pos = stypeSqlTypeMap.find(sType);
     if (pos != stypeSqlTypeMap.end()) {
         columnType.colType = pos->second.first;
@@ -165,32 +166,45 @@ ColumnType make_columnType(int sType) {
     return columnType;
 }
 
-template <typename T>
 struct ColSizeValue
 {
     int size;
-    T value;
+    string value;
 };
 
-template <typename T>
-ColSizeValue<T> parseColumeValue (ColumnType columnType, vector<unsigned char> playloadContect, int offset)
+
+ColSizeValue parseColumeValue (ColumnType columnType, vector<unsigned char> playloadContect, int offset)
 {
-    ColSizeValue<T> colSizeVal;
+    ColSizeValue colSizeVal;
+    colSizeVal.size = -1;
+    colSizeVal.value = "";
+    vector<unsigned char>::iterator pos = playloadContect.begin();
     switch (columnType.sType) {
         case STYPE_NULL:
-            ;
+            colSizeVal.size = 0;
+            colSizeVal.value = "";
             break;
         case STYPE_INT8:
-            ;
+            colSizeVal.size = 1;
+            colSizeVal.value = to_string(*playloadContect.begin());
             break;
         case STYPE_INT16:
-            ;
+            colSizeVal.size = 2;
+            colSizeVal.value = to_string((uint16_t)*pos << 8 |
+                                         *(pos + 1));
             break;
         case STYPE_INT24:
-            ;
+            colSizeVal.size = 3;
+            colSizeVal.value = to_string((uint32_t)*pos << 16 |
+                                         (uint32_t)*(pos + 1) << 8 |
+                                         *(pos + 2));
             break;
         case STYPE_INT32:
-            ;
+            colSizeVal.size = 4;
+            colSizeVal.value = to_string((uint32_t)*pos << 24 |
+                                         (uint32_t)*(pos + 1) << 16 |
+                                         (uint32_t)*(pos + 2) << 8 |
+                                         *(pos + 3));
             break;
         case STYPE_INT48:
             ;
@@ -228,27 +242,30 @@ ColSizeValue<T> parseColumeValue (ColumnType columnType, vector<unsigned char> p
 void parseTableLeafCellPlayload(vector<unsigned char> playloadContent)
 {
     int playloadOffset = 0;
-    vector<unsigned long> cols;
+    vector<ColumnType> cols;
     
     varint headerSize = parseVarint(playloadContent, playloadOffset);
     cout << "Header size: " << headerSize.second << endl;
     playloadOffset += headerSize.first;
     
     varint sType1 = parseVarint(playloadContent, playloadOffset);
-    cols.push_back(sType1.second);
+    cols.push_back(make_columnType(sType1.second));
     cout << "sType 1: " << sType1.second << endl;
     playloadOffset += sType1.first;
     
     while (playloadOffset < headerSize.second) {
         varint sType = parseVarint(playloadContent, playloadOffset);
-        cols.push_back(sType.second);
+        cols.push_back(make_columnType(sType1.second));
         cout << "sType: " << sType.second << endl;
         playloadOffset += sType.first;
     }
     
-    vector<unsigned long>::iterator pos;
+    int offset = playloadOffset;
+    vector<ColumnType>::iterator pos;
     for (pos = cols.begin(); pos != cols.end(); ++pos) {
-        ; // parseColumeValue
+        ColSizeValue colSizeValue =  parseColumeValue(*pos, playloadContent, offset);
+        offset += colSizeValue.size;
+        cout << "col Value: " << colSizeValue.value << endl;
     }
 }
     
