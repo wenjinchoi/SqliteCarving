@@ -111,6 +111,25 @@ ColumnType make_columnType(int sType) {
     return columnType;
 }
 
+uint64_t vec_uchar2uint64_t(vec_uchar::iterator pos, size_t length)
+{
+    uint64_t value = static_cast<uint64_t>(*pos);
+    size_t i = 1;
+    while (i < length) {
+        value <<= 8;
+        value |= static_cast<uint64_t>(*(pos + i));
+        ++i;
+    }
+    return value;
+}
+
+float vec_uchar2float(vec_uchar::iterator pos, size_t length)
+{
+    uint64_t value = vec_uchar2uint64_t(pos, length);
+    // FIXIT: may be not good.
+    return *((float *)&value);
+}
+
 ColSizeValue parseColumeValue (ColumnType columnType,
                                vec_uchar playloadContent,
                                int offset)
@@ -122,57 +141,58 @@ ColSizeValue parseColumeValue (ColumnType columnType,
     switch (columnType.sType) {
         case STYPE_NULL:
             colSizeVal.size = 0;
-            colSizeVal.value = "";
+            colSizeVal.value = "Null";
             break;
         case STYPE_INT8:
             colSizeVal.size = 1;
-            colSizeVal.value = to_string(*pos);
+            colSizeVal.value = to_string(vec_uchar2uint64_t(pos, colSizeVal.size));
             break;
         case STYPE_INT16:
             colSizeVal.size = 2;
-            colSizeVal.value = to_string((uint16_t)*pos << 8 |
-                                         *(pos + 1));
+            colSizeVal.value = to_string(vec_uchar2uint64_t(pos, colSizeVal.size));
             break;
         case STYPE_INT24:
             colSizeVal.size = 3;
-            colSizeVal.value = to_string((uint32_t)*pos << 16 |
-                                         (uint32_t)*(pos + 1) << 8 |
-                                         *(pos + 2));
+            colSizeVal.value = to_string(vec_uchar2uint64_t(pos, colSizeVal.size));
             break;
         case STYPE_INT32:
             colSizeVal.size = 4;
-            colSizeVal.value = to_string((uint32_t)*pos << 24 |
-                                         (uint32_t)*(pos + 1) << 16 |
-                                         (uint32_t)*(pos + 2) << 8 |
-                                         *(pos + 3));
-            break;
+            colSizeVal.value = to_string(vec_uchar2uint64_t(pos, colSizeVal.size));
+             break;
         case STYPE_INT48:
-            ;
+            colSizeVal.size = 6;
+            colSizeVal.value = to_string(vec_uchar2uint64_t(pos, colSizeVal.size));
             break;
         case STYPE_INT64:
-            ;
+            colSizeVal.size = 8;
+            colSizeVal.value = to_string(vec_uchar2uint64_t(pos, colSizeVal.size));
             break;
         case STYPE_FLOAT:
-            ;
+            colSizeVal.size = 8;
+            colSizeVal.value = to_string(vec_uchar2float(pos, colSizeVal.size));
             break;
         case STYPE_CONST0:
-            ;
+            colSizeVal.size = 0;
+            colSizeVal.value = to_string(0);
             break;
         case STYPE_CONST1:
-            ;
+            colSizeVal.size = 0;
+            colSizeVal.value = to_string(1);
             break;
         default:
             if (columnType.colType == SQL_TYPE_BLOB)
             {
-                
+                // TODO: finish it.
             }
             else if (columnType.colType == SQL_TYPE_TEXT)
             {
-                
+                colSizeVal.size = columnType.size;
+                string s(pos, pos + columnType.size);
+                colSizeVal.value = s;
             }
             else
             {
-                
+                cout << "Unknown column type: " << columnType.sType << endl;
             }
             break;
     }
