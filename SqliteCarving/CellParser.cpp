@@ -87,7 +87,6 @@ ColumnType make_columnType(int sType) {
     ColumnType columnType;
     columnType.sType = sType;
     StypeSqlTypeMap::iterator pos;
-    build_map();
     pos = stypeSqlTypeMap.find(sType);
     if (pos != stypeSqlTypeMap.end()) {
         columnType.colType = pos->second.first;
@@ -240,7 +239,7 @@ void parseTableLeafCell(vec_uchar cellContent)
     cout << "intKey: " << intKey.second << endl;
     cellOffset += intKey.first;
     
-    // FIXIT:
+    // FIXIT: process overflow
     int sqlPageSize = 1024;
     bool overflow = playloadSize.second > (sqlPageSize - 35);
     if (overflow)
@@ -261,6 +260,8 @@ void parseTableLeafCell(vec_uchar cellContent)
 
 void testo()
 {
+    build_map();
+    
     int length = sizeof(testdata)/sizeof(unsigned char);
     vec_uchar vtd;
     for (int i = 0; i < length; ++i) {
