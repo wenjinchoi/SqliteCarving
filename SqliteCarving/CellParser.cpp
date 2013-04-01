@@ -37,6 +37,8 @@ const int STYPE_FLOAT = 7;  // IEEE float  8
 const int STYPE_CONST0 = 8; 
 const int STYPE_CONST1 = 9;
 
+uint sqlPageSize = 1024;
+
 namespace  {
 typedef pair<int, int> SqlTypeInt;
 typedef map<const int, SqlTypeInt> StypeSqlTypeMap;
@@ -181,7 +183,9 @@ ColSizeValue parseColumeValue (ColumnType columnType,
         default:
             if (columnType.colType == SQL_TYPE_BLOB)
             {
-                // TODO: finish it.
+                colSizeVal.size = columnType.size;
+                string s(pos, pos + columnType.size);
+                colSizeVal.value = s;
             }
             else if (columnType.colType == SQL_TYPE_TEXT)
             {
@@ -203,10 +207,12 @@ void parseTableLeafCellPlayload(vec_uchar playloadContent)
     int playloadOffset = 0;
     vector<ColumnType> cols;
     
+    // Type's header size
     varint headerSize = parseVarint(playloadContent, playloadOffset);
     cout << "Header size: " << headerSize.second << endl;
     playloadOffset += headerSize.first;
     
+    // Get type's value
     varint sType1 = parseVarint(playloadContent, playloadOffset);
     cols.push_back(make_columnType(sType1.second));
     cout << "sType 1: " << sType1.second << endl;
@@ -219,6 +225,8 @@ void parseTableLeafCellPlayload(vec_uchar playloadContent)
         playloadOffset += sType.first;
     }
     
+    // TODO: process overflow
+    // bool overflowReached = false;
     int offset = playloadOffset;
     vector<ColumnType>::iterator pos;
     for (pos = cols.begin(); pos != cols.end(); ++pos) {
@@ -227,7 +235,23 @@ void parseTableLeafCellPlayload(vec_uchar playloadContent)
         cout << "col Value: " << colSizeValue.value << endl;
     }
 }
-    
+
+uint overflowLocalSize(uint playloadSize, uint usableSize)
+{
+    uint minEmbeddedFraction = 32;
+    uint minLocal = ((usableSize - 12) * minEmbeddedFraction / 255) - 23;
+    uint maxLocal = usableSize - 35;
+    uint localSize = minLocal + ((playloadSize - minLocal) % (usableSize - 4));
+    if (localSize < maxLocal)
+    {
+        return localSize;
+    }
+    else
+    {
+        return minLocal;
+    }
+}
+
 void parseTableLeafCell(vec_uchar cellContent)
 {
     int cellOffset = 0;
@@ -239,23 +263,25 @@ void parseTableLeafCell(vec_uchar cellContent)
     cout << "intKey: " << intKey.second << endl;
     cellOffset += intKey.first;
     
-    // FIXIT: process overflow
     int sqlPageSize = 1024;
     bool overflow = playloadSize.second > (sqlPageSize - 35);
     if (overflow)
     {
-        ;
+        uint localBytes = overflowLocalSize(playloadSize.second, sqlPageSize);
+        cout << "Overflow cell payload encountered..." << localBytes
+             << "bytes are stored in this page." << endl;
+        vec_uchar playloadContent(cellContent.begin() + cellOffset,
+                                  cellContent.begin() + localBytes);
+        parseTableLeafCellPlayload(playloadContent);
     }
     else
     {
-        vec_uchar::iterator pos_start = cellContent.begin() + cellOffset;
-        vec_uchar::iterator pos_end = cellContent.begin() + playloadSize.second;
-        vec_uchar playloadContent(pos_start, pos_end);
+        vec_uchar playloadContent(cellContent.begin() + cellOffset,
+                                  cellContent.begin() + playloadSize.second);
         parseTableLeafCellPlayload(playloadContent);
     }
     cout << "Parsing cell done." << endl;
-    
-    
+    // return;
 }
 
 void testo()
