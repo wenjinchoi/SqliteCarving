@@ -11,10 +11,15 @@
 
 #include <iostream>
 #include <string>
+#include <vector>
 
 using std::string;
 
-void testo();
+typedef std::pair<int, unsigned> varint;
+typedef std::vector<unsigned char> vec_uchar;
+
+void build_map();
+void parseTableLeafCell(vec_uchar cellContent);
 
 class SqliteCarving {
 public:

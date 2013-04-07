@@ -59,20 +59,6 @@ void build_map()
     stypeSqlTypeMap.insert(make_pair(STYPE_CONST1, make_pair(SQL_TYPE_INT, 0)));
 }
 
-const unsigned char testdata[] = {
-    0x2B, 0x01, 0x12, 0x00, 0x01, 0x17, 0x00, 0x04,
-    0x00, 0x01, 0x01, 0x01, 0x00, 0x00, 0x1D, 0x00,
-    0x01, 0x01, 0x01, 0x01, 0x01, 0x31, 0x30, 0x30,
-    0x38, 0x36, 0x50, 0xE2, 0x43, 0x20, 0x00, 0xFF,
-    0x01, 0x52, 0x65, 0x63, 0x6F, 0x72, 0x64, 0x20,
-    0x31, 0x00, 0x00, 0x00, 0x00
-};
-
- 
-typedef pair<int, unsigned> varint;
-typedef vector<unsigned char> vec_uchar;
-
-
 struct ColumnType {
     int sType;    // Type value  sType col 1 (varint) ... col N (varint)
     int colType;  // Column Type
@@ -284,19 +270,3 @@ void parseTableLeafCell(vec_uchar cellContent)
     // return;
 }
 
-void testo()
-{
-    build_map();
-    
-    int length = sizeof(testdata)/sizeof(unsigned char);
-    vec_uchar vtd;
-    for (int i = 0; i < length; ++i) {
-        vtd.push_back(testdata[i]);
-    }
-    
-    cout << "Test Data: " << endl;
-    copy(vtd.begin(), vtd.end(), ostream_iterator<int>(cout, " "));
-    cout << endl << endl;
-    
-    parseTableLeafCell(vtd);
-}
