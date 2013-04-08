@@ -51,11 +51,13 @@ void SqliteFileParser::setInputFile(std::string file)  {
     }
 }
 
-int SqliteFileParser::pageSize() {
-    return pageSize_;
-}
-
 std::vector<char> SqliteFileParser::pageAt(int index) {
+    if (file_.empty()) {
+        std::cout << "The input file is not defined." << std::endl;
+        page_.clear();
+        return page_;
+    }
+    
     currentPage_ = index;
     
     std::ifstream rfile;

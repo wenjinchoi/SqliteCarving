@@ -18,8 +18,13 @@ public:
     SqliteFileParser(): pageSize_(0),
                         sizeOfPages_(0),
                         currentPage_(1) {}
+    
     void setInputFile(std::string file);
-    int pageSize();
+    
+    int pageSize(){ return pageSize_; }
+    
+    unsigned long sizeOfPages() { return sizeOfPages_; }
+    
     std::vector<char> pageAt(int index);
     
 private:
