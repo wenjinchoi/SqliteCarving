@@ -18,20 +18,19 @@ public:
     SqliteFileParser(): pageSize_(0),
                         sizeOfPages_(0),
                         currentPage_(1) {}
-    
     void setInputFile(std::string file);
-    
-    std::vector<unsigned char> pageAt(int index);
-
     int pageSize();
+    std::vector<char> pageAt(int index);
     
 private:
     std::string file_;
+    unsigned long currentPage_;
+    
     unsigned int pageSize_;
     unsigned long sizeOfPages_;
-    unsigned long currentPage_;
-    bool isAutoVacuum;
-    std::vector<unsigned char> page_;
+    bool isAutoVacuum_;
+    
+    std::vector<char> page_;
 };
 
 #endif /* defined(__SqliteCarving__SqliteFileParser__) */

@@ -48,15 +48,15 @@ void testSqliteFileParser()
     int pageSize = fparser.pageSize();
     cout << "Page Size: " << pageSize << endl;
     
-    std::vector<unsigned char> thePage = fparser.pageAt(2);
+    std::vector<char> thePage = fparser.pageAt(2);
     copy(thePage.begin(), thePage.end(),
-         ostream_iterator<unsigned char>(cout, " "));
+         ostream_iterator<char>(cout, ""));
 }
 
 
 int main(int argc, const char * argv[])
 {
-    testCellParser();
+    // testCellParser();
     testSqliteFileParser();
     
     return 0;
