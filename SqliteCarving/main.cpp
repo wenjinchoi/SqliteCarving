@@ -10,6 +10,7 @@
 #include <algorithm>
 
 #include "SqliteFileParser.h"
+#include "SqlitePageParser.h"
 #include "CellParser.h"
 
 using namespace std;
@@ -53,12 +54,33 @@ void testSqliteFileParser()
          ostream_iterator<char>(cout, ""));
 }
 
+void testSqlitePageParser()
+{
+    SqliteFileParser fparser = SqliteFileParser();
+    fparser.setInputFile("/Users/wenjinchoi/Desktop/mmssms_2infreeblock.db");
+    std::vector<char> thePage = fparser.pageAt(2);
+    
+    using sqlparser::SqlitePageParser;
+    SqlitePageParser pparser = SqlitePageParser(thePage);
+    pparser.parsePage();
+    
+    std::vector<uint16_t> cellList = pparser.cellList();
+    std::cout << "Cell list: ";
+    copy(cellList.begin(), cellList.end(),
+         ostream_iterator<uint16_t>(std::cout, " "));
+    std::cout << endl;
+    
+    std::cout << "First free block offset: "
+              << pparser.firstFreeBlockOffset() << std::endl;
+    
+}
+
 
 int main(int argc, const char * argv[])
 {
     // testCellParser();
-    testSqliteFileParser();
-    
+    // testSqliteFileParser();
+    testSqlitePageParser();
     return 0;
 }
 
