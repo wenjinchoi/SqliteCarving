@@ -9,33 +9,13 @@
 #ifndef __SqliteCarving__SqliteFileParser__
 #define __SqliteCarving__SqliteFileParser__
 
-#include <iostream>
-#include <vector>
-#include <string>
+#include "basedef.h"
 
-class SqliteFileParser {
-public:
-    SqliteFileParser(): pageSize_(0),
-                        sizeOfPages_(0),
-                        currentPage_(1) {}
+namespace sqliteparse {
+unsigned int pageSize(std::string sqliteFile);
+unsigned long sizeOfPages(std::string sqliteFile);
+bool isAutoVacuum(std::string sqliteFile);
+base::bytes_t pageAt(std::string sqliteFile, int index);
+} // namespace sqliteparse
     
-    void setInputFile(std::string file);
-    
-    int pageSize(){ return pageSize_; }
-    
-    unsigned long sizeOfPages() { return sizeOfPages_; }
-    
-    std::vector<char> pageAt(int index);
-    
-private:
-    std::string file_;
-    unsigned long currentPage_;
-    
-    unsigned int pageSize_;
-    unsigned long sizeOfPages_;
-    bool isAutoVacuum_;
-    
-    std::vector<char> page_;
-};
-
 #endif /* defined(__SqliteCarving__SqliteFileParser__) */

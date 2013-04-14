@@ -7,9 +7,15 @@
 //
 
 #include "SqlitePageParser.h"
+#include "utils.h"
+
 #include <algorithm>
 
 using namespace sqlparser;
+
+using std::vector;
+using std::pair;
+using std::make_pair;
 
 bool SqlitePageParser::isTableLeafPage()
 {
@@ -49,6 +55,28 @@ std::vector<std::pair<uint16_t, uint16_t> > SqlitePageParser::freeBlockAreaList(
     freeBlockAreaList_.push_back(std::make_pair(first_begin, first_end));
     
     //TODO: free block list
+    vector<unsigned char> cellsArea;
+    vector<uint16_t>::iterator pos;
+    for (pos = cellList_.begin(); pos != cellList_.end(); ++pos) {
+        cellsArea.clear();
+        for (int i = *pos; i < *pos + 9; ++i) {
+            cellsArea.push_back(page_[i]);
+        }
+        pair<int, unsigned long> varint = parseVarint(cellsArea);
+        if (pos == cellList_.begin() &&
+            (page_.size() - *pos - varint.second - varint.first) > 3)
+        {
+            freeBlockAreaList_.push_back(make_pair(*pos + varint.second,
+                                                   page_.size() -1 ));
+        }
+        else if (*(pos-1) - (*pos + varint.second) > 3 )
+        {
+            freeBlockAreaList_.push_back(make_pair(*pos + varint.second,
+                                                   *(pos - 1) - 1));
+        }
+    }
+    
+    return freeBlockAreaList_;
 }
 
 void SqlitePageParser::parsePage()

@@ -32,14 +32,14 @@ public:
     
     std::vector<uint16_t> cellList() { return cellList_; }
     std::vector<std::pair<int, int> > freeBlockList();
+    
+    std::vector<std::pair<uint16_t, uint16_t> > freeBlockAreaList();
 
 protected:
     std::vector<uint16_t> parseCellPointerArray(vec_char_it begin,
                                int numOfCells);
     
 private:
-    std::vector<std::pair<uint16_t, uint16_t> > freeBlockAreaList();
-    
     std::vector<char> page_;
     
     unsigned int firstFreeBlockOffset_;

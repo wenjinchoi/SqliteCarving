@@ -9,11 +9,14 @@
 #include <iostream>
 #include <algorithm>
 
+#include "basedef.h"
 #include "SqliteFileParser.h"
 #include "SqlitePageParser.h"
 #include "CellParser.h"
+#include "utils.h"
 
 using namespace std;
+
 
 void testCellParser()
 {
@@ -41,24 +44,35 @@ void testCellParser()
     parseTableLeafCell(vtd);
 }
 
+void test_util() {
+    char mem[2] = { 0x2B, 0x12 };
+    int v = getValueFromMem<int>(mem, 2);
+    std::cout << "value: " << v << std::endl;
+}
+
 void testSqliteFileParser()
 {
-    SqliteFileParser fparser = SqliteFileParser();
-    fparser.setInputFile("/Users/wenjinchoi/Desktop/mmssms.db");
+    string filename = string("/Users/wenjinchoi/Desktop/mmssms.db");
     
-    int pageSize = fparser.pageSize();
-    cout << "Page Size: " << pageSize << endl;
+    unsigned int pageSize1 = sqliteparse::pageSize(filename);
+    unsigned long sizeOfPages1 = sqliteparse::sizeOfPages(filename);
+    bool isAutoVacuum1 = sqliteparse::isAutoVacuum(filename);
+    cout << "Page Size: " << pageSize1
+         << " Size of Pages: " << sizeOfPages1
+         << " Is Auto Vacuum:" << isAutoVacuum1 << endl;
     
-    std::vector<char> thePage = fparser.pageAt(2);
+    cout << "Page at 1: " << endl;
+    base::bytes_t thePage = sqliteparse::pageAt(filename, 1);
     copy(thePage.begin(), thePage.end(),
          ostream_iterator<char>(cout, ""));
 }
 
+/*
 void testSqlitePageParser()
 {
     SqliteFileParser fparser = SqliteFileParser();
     fparser.setInputFile("/Users/wenjinchoi/Desktop/mmssms_2infreeblock.db");
-    std::vector<char> thePage = fparser.pageAt(2);
+    base::bytes_t thePage = fparser.pageAt(2);
     
     using sqlparser::SqlitePageParser;
     SqlitePageParser pparser = SqlitePageParser(thePage);
@@ -73,14 +87,24 @@ void testSqlitePageParser()
     std::cout << "First free block offset: "
               << pparser.firstFreeBlockOffset() << std::endl;
     
+    std::vector<std::pair<uint16_t, uint16_t> > freeBlocArea;
+    freeBlocArea = pparser.freeBlockAreaList();
+    std::cout << "Free Block Aree List: ";
+    
+    std::vector<std::pair<uint16_t, uint16_t> >::iterator pos;
+    for (pos = freeBlocArea.begin(); pos != freeBlocArea.end(); ++pos) {
+        std::cout << "[" << pos->first << ", " << pos->second << "], ";
+    }
+    std::cout << std::endl;
 }
-
+*/
 
 int main(int argc, const char * argv[])
 {
     // testCellParser();
-    // testSqliteFileParser();
-    testSqlitePageParser();
+//    testSqlitePageParser();
+    test_util();
+    testSqliteFileParser();
     return 0;
 }
 
