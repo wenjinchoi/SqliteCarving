@@ -13,11 +13,12 @@
 #include "SqliteFileParser.h"
 #include "SqlitePageParser.h"
 #include "CellParser.h"
-#include "utils.h"
+
+//#include "utils.h"
 
 using namespace std;
 
-
+/*
 void testCellParser()
 {
     const unsigned char testdata[] = {
@@ -43,28 +44,43 @@ void testCellParser()
     
     parseTableLeafCell(vtd);
 }
-
+*/
+ 
+/*
 void test_util() {
     char mem[2] = { 0x2B, 0x12 };
     int v = getValueFromMem<int>(mem, 2);
     std::cout << "value: " << v << std::endl;
 }
+ */
 
 void testSqliteFileParser()
 {
     string filename = string("/Users/wenjinchoi/Desktop/mmssms.db");
     
-    unsigned int pageSize1 = sqliteparse::pageSize(filename);
-    unsigned long sizeOfPages1 = sqliteparse::sizeOfPages(filename);
-    bool isAutoVacuum1 = sqliteparse::isAutoVacuum(filename);
+    unsigned int pageSize1 = sqliteparser::pageSize(filename);
+    unsigned long sizeOfPages1 = sqliteparser::sizeOfPages(filename);
+    bool isAutoVacuum1 = sqliteparser::isAutoVacuum(filename);
     cout << "Page Size: " << pageSize1
          << " Size of Pages: " << sizeOfPages1
          << " Is Auto Vacuum:" << isAutoVacuum1 << endl;
     
-    cout << "Page at 1: " << endl;
-    base::bytes_t thePage = sqliteparse::pageAt(filename, 1);
+    cout << "Page at 2: " << endl;
+    base::bytes_t thePage = sqliteparser::pageAt(filename, 2);
     copy(thePage.begin(), thePage.end(),
          ostream_iterator<char>(cout, ""));
+    
+    vector<base::blockArea> freeblocks =
+        sqliteparser::getFreeBlockAreaList(thePage);
+    
+    vector<base::blockArea>::iterator pos;
+    int i = 0;
+    for (pos = freeblocks.begin(); pos != freeblocks.end(); ++pos) {
+        cout << "No." << i << " begin: " << pos->begin
+             << " end: " << pos->end << endl;
+    }
+    cout << endl;
+    
 }
 
 /*
@@ -99,11 +115,12 @@ void testSqlitePageParser()
 }
 */
 
+
 int main(int argc, const char * argv[])
 {
     // testCellParser();
 //    testSqlitePageParser();
-    test_util();
+//    test_util();
     testSqliteFileParser();
     return 0;
 }

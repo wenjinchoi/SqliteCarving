@@ -6,24 +6,24 @@
 //  Copyright (c) 2013 wenjin choi. All rights reserved.
 //
 
-#include "SqliteFileParser.h"
-#include "utils.h"
 #include <fstream>
 
-unsigned int sqliteparse::pageSize(std::string sqliteFile) {
+#include "SqliteFileParser.h"
+
+unsigned int sqliteparser::pageSize(std::string sqliteFile) {
     return getValueFromFile<unsigned int>(sqliteFile, 16, 2);
 }
 
-unsigned long sqliteparse::sizeOfPages(std::string sqliteFile) {
+unsigned long sqliteparser::sizeOfPages(std::string sqliteFile) {
     return getValueFromFile<unsigned long>(sqliteFile, 28, 4);
 }
 
-bool sqliteparse::isAutoVacuum(std::string sqliteFile) {
+bool sqliteparser::isAutoVacuum(std::string sqliteFile) {
     int v = getValueFromFile<int>(sqliteFile, 52, 4);
     return static_cast<bool>(v);
 }
 
-base::bytes_t sqliteparse::pageAt(std::string sqliteFile, int index) {
+base::bytes_t sqliteparser::pageAt(std::string sqliteFile, int index) {
     base::bytes_t page;
     page.clear();
     
@@ -32,7 +32,7 @@ base::bytes_t sqliteparse::pageAt(std::string sqliteFile, int index) {
         return page;
     }
     
-    int pageSize = sqliteparse::pageSize(sqliteFile);
+    int pageSize = sqliteparser::pageSize(sqliteFile);
     std::ifstream file;
     file.open(sqliteFile.c_str(),
                std::ios::in | std::ios::binary | std::ios::ate);

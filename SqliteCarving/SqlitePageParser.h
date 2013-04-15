@@ -12,45 +12,25 @@
 #include <iostream>
 #include <vector>
 
-namespace sqlparser {
-typedef std::vector<char> vec_char;
-typedef std::vector<char>::iterator vec_char_it;
+#include "basedef.h"
+#include "utils.h"
 
-class SqlitePageParser {
-public:
-    SqlitePageParser() {}
-    SqlitePageParser(std::vector<char> page) { page_ = page; }
+using std::vector;
 
-    bool isTableLeafPage();
-    bool isIndexLeafPage();
-    
-    void parsePage();
-    
-    int numOfCells() { return numOfCells_; }
-    int numOfFragments() { return  numOfFragments_; }
-    int firstFreeBlockOffset() { return firstFreeBlockOffset_; }
-    
-    std::vector<uint16_t> cellList() { return cellList_; }
-    std::vector<std::pair<int, int> > freeBlockList();
-    
-    std::vector<std::pair<uint16_t, uint16_t> > freeBlockAreaList();
+namespace sqliteparser {
+bool isTableLeaf(base::bytes_t& page);
+bool isIndexLeaf(base::bytes_t& page);
 
-protected:
-    std::vector<uint16_t> parseCellPointerArray(vec_char_it begin,
-                               int numOfCells);
+using base::tableLeafHeader;
+tableLeafHeader getTableLeafHeader(base::bytes_t& page);
+            
+vector<unsigned int> getCellPointers(base::bytes_it begin,
+                                     unsigned int numOfCells);
+
+vector<base::cellInfo> getCellList(base::bytes_t& page);
+
+vector<base::blockArea> getFreeBlockAreaList(base::bytes_t& page);
     
-private:
-    std::vector<char> page_;
-    
-    unsigned int firstFreeBlockOffset_;
-    unsigned int numOfCells_;
-    unsigned int cellContentOffset_;
-    unsigned int numOfFragments_;
-    
-    std::vector<uint16_t> cellList_;
-    std::vector<std::pair<uint16_t, uint16_t> > freeBlockAreaList_;
-    
-};
 } // namespace sqlparser
 
 #endif /* defined(__SqliteCarving__SqlitePageParser__) */

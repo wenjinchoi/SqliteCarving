@@ -13,6 +13,8 @@
 #include <string>
 #include <vector>
 
+#include "utils.h"
+
 using std::string;
 
 typedef std::pair<int, unsigned> varint;

@@ -17,22 +17,23 @@ using std::cout;
 using std::endl;
 
 // walk max 9 bytes, while the MSB is 1, add the last 7 LSB's to the integer
-std::pair<int, unsigned long> parseVarint(vector<unsigned char> varintBytes, int offset) {
-    vector<unsigned char>::iterator pos = varintBytes.begin() + offset;
-    vector<unsigned char> viBytes(pos, varintBytes.end());
+base::varint_t parseVarint(base::bytes_it beg,
+                           base::bytes_it end,
+                           unsigned int offset) {
+    base::bytes_it pos = beg + offset;
     unsigned long value = 0;
     bool isCompleted = false;
-    int byte_num = 0;
-    while (byte_num < 9 && byte_num < viBytes.size() && !isCompleted) {
-        uint8_t viByte = uint8_t(viBytes[byte_num]);
-        bitset<8> b(viBytes[byte_num]);
+    int length = 0;
+    while (length < 9 && pos < end && !isCompleted) {
+        uint8_t viByte = *pos;
+        bitset<8> b(viByte);
         // not the last varint byte
-        if (b.test(7) && byte_num < 8)
+        if (b.test(7) && length < 8)
         {
             value = (value << 7) | (viByte & 0b01111111);
         }
         // last one, stop and finalyze the integer
-        else if (b.test(7) && byte_num == 8)
+        else if (b.test(7) && length == 8)
         {
             value = (value << 8) | (viByte);
             isCompleted = true;
@@ -43,22 +44,27 @@ std::pair<int, unsigned long> parseVarint(vector<unsigned char> varintBytes, int
             value= (value << 7) | (viByte & 0b01111111);
             isCompleted = true;
         }
-        byte_num += 1;
+        length += 1;
     }
+    base::varint_t varint;
     if (isCompleted) {
-        return make_pair(byte_num, value);
+        varint.value = value;
+        varint.length = length;
+    } else {
+        varint.value = 0;
+        varint.length = 0;
     }
-    else
-    {
-        return make_pair(0, 0);
-    }
+    return varint;
 }
+
+
 
 bool isOdd(int num)
 {
     return bool(num & 1);
 }
 
+/*
 void testParseVarint() {
     
     vector<unsigned char> td1;
@@ -81,4 +87,5 @@ void testParseVarint() {
     td3.push_back(0x20);
     
 }
+ */
 

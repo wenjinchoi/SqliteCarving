@@ -10,8 +10,9 @@
 #define __SqliteCarving__SqliteFileParser__
 
 #include "basedef.h"
+#include "utils.h"
 
-namespace sqliteparse {
+namespace sqliteparser {
 unsigned int pageSize(std::string sqliteFile);
 unsigned long sizeOfPages(std::string sqliteFile);
 bool isAutoVacuum(std::string sqliteFile);
