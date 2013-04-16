@@ -60,6 +60,7 @@ vector<base::cellInfo> getCellList(base::bytes_t& page) {
         cell_info.offset = *pos;
         base::varint_t vint = parseVarint(page.begin() + *pos, page.end());
         cell_info.length = vint.value;
+        cellInfos.push_back(cell_info);
     }
     return cellInfos;
 }
