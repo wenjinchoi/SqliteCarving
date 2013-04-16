@@ -31,15 +31,35 @@ struct tableLeafHeader {
 };
     
 struct cellInfo {
-    unsigned long offset;
-    unsigned long length;
+    uint64_t offset;
+    uint64_t length;
 };
   
 // Block area: [begin, end]
 struct blockArea {
-    unsigned long begin;
-    unsigned long end;
+    uint64_t begin;
+    uint64_t end;
 };
 
+// SQL Type
+const int SQL_TYPE_INT = 1;
+const int SQL_TYPE_TEXT = 2;
+const int SQL_TYPE_FLOAT = 4;
+const int SQL_TYPE_BLOB = 8;
+const int SQL_TYPE_NULL = 16;
+
+// Column Type
+//                             含义         数据宽度(字节数)
+const int STYPE_NULL = 0;   // NULL        0
+const int STYPE_INT8 = 1;   // signed int  1
+const int STYPE_INT16 = 2;  // signed int  2
+const int STYPE_INT24 = 3;  // signed int  3
+const int STYPE_INT32 = 4;  // signed int  4
+const int STYPE_INT48 = 5;  // signed int  6
+const int STYPE_INT64 = 6;  // signed int  8
+const int STYPE_FLOAT = 7;  // IEEE float  8
+const int STYPE_CONST0 = 8; 
+    const int STYPE_CONST1 = 9;
+    
 } // namespace base
 #endif
