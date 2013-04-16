@@ -29,11 +29,11 @@ template <typename T>
 T getValueFromMem(char* memblock, int length) {
     T value = T();
     value <<= length * 8;
-    value |= static_cast<T>(memblock[0]);
+    value |= static_cast<uint8_t>(memblock[0]);
     int i = 1;
     while (i < length) {
-        value <<= 8;
-        value |= static_cast<T>(memblock[i]);
+        value = value << 8;
+        value |= static_cast<uint8_t>(memblock[i]);
         ++i;
     }
     return value;
