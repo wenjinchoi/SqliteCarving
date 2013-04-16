@@ -8,12 +8,52 @@
 
 #include "CellParser.h"
 
-
 #include <bitset>
-#include <vector>
-#include <string>
-#include <map>
 #include <algorithm>
+
+namespace sqliteparser {
+
+// FIXIT: only for test.
+// Need to auto parse the tmpl.
+vector<SQLTYPE> testTmpl () {
+    RecordTmpl tmpl;
+    tmpl.push_back(base::SQL_TYPE_INT);
+    tmpl.push_back(base::SQL_TYPE_INT | base::SQL_TYPE_NULL);
+    tmpl.push_back(base::SQL_TYPE_TEXT | base::SQL_TYPE_NULL);
+    tmpl.push_back(base::SQL_TYPE_INT | base::SQL_TYPE_NULL);
+    tmpl.push_back(base::SQL_TYPE_INT | base::SQL_TYPE_NULL);
+    tmpl.push_back(base::SQL_TYPE_INT | base::SQL_TYPE_NULL);
+    tmpl.push_back(base::SQL_TYPE_INT | base::SQL_TYPE_NULL);
+    tmpl.push_back(base::SQL_TYPE_INT);
+    tmpl.push_back(base::SQL_TYPE_INT);
+    tmpl.push_back(base::SQL_TYPE_INT | base::SQL_TYPE_NULL);
+    tmpl.push_back(base::SQL_TYPE_INT | base::SQL_TYPE_NULL);
+    tmpl.push_back(base::SQL_TYPE_TEXT | base::SQL_TYPE_NULL);
+    tmpl.push_back(base::SQL_TYPE_TEXT | base::SQL_TYPE_NULL);
+    return tmpl;
+}
+
+
+// 根据 sqlite db 的 schema, 获取指定表的的 schema(Template)
+// Record 的 Types 是 Varint，
+// 解析变长整数后与预设的 Map 进行匹配，得到相应的SQL_TYPE
+// 当连续读取数据的 SQL_TYPE 都满足 Template，则判断找到一条记录
+// 再根据 Template 读取后面的 Data 区内容
+    
+vector<Record> parseFreeBlock(base::bytes_it begin, base::bytes_it end) {
+    base::bytes_it pos;
+    tmpl = testTmpl();
+    for (pos = begin; pos < end;) {
+        base::varint vint = parseVarint(pos, end);
+        // To be continue...
+        // 与当前的 RecordTmpl 比较
+    }
+    // 如果完全满足当前的 RecordTmpl，则取出 Data 区的数据
+    // Data 区尾不能跨越到已存在数据块
+    // 如果仍未到达 end，则继续解析
+}
+
+}
 
 using namespace std;
 
