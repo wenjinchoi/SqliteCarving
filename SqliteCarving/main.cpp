@@ -56,7 +56,7 @@ void test_util() {
 
 void testSqliteFileParser()
 {
-    string filename = string("/Users/wenjinchoi/Desktop/mmssms.db");
+    string filename = string("/Users/wenjinchoi/Desktop/mmssms_del5.db");
     
     unsigned int pageSize1 = sqliteparser::pageSize(filename);
     unsigned long sizeOfPages1 = sqliteparser::sizeOfPages(filename);
@@ -69,15 +69,18 @@ void testSqliteFileParser()
     base::bytes_t thePage = sqliteparser::pageAt(filename, 2);
     copy(thePage.begin(), thePage.end(),
          ostream_iterator<char>(cout, ""));
+    cout << endl << endl;
     
     vector<base::blockArea> freeblocks =
         sqliteparser::getFreeBlockAreaList(thePage);
     
+    cout << "Free Block Area: " << endl;
     vector<base::blockArea>::iterator pos;
-    int i = 0;
+    int i = 1;
     for (pos = freeblocks.begin(); pos != freeblocks.end(); ++pos) {
         cout << "No." << i << " begin: " << pos->begin
              << " end: " << pos->end << endl;
+        ++i;
     }
     cout << endl;
     
