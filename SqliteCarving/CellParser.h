@@ -17,19 +17,36 @@
 #include "basedef.h"
 #include "utils.h"
 
+using std::vector;
+using std::map;
+using std::string;
+
 namespace sqliteparser {
 
-typedef int SQLTYPE;
-typedef vector<SQLTYPE> RecordTmpl;
-typedef std::map<std::string, std::string> Record;
+typedef vector<base::sql_type> RecordTmpl;
+typedef vector<string> Records;
+    
+typedef map<base::serial_type, base::sql_type> sTypeSqlTypeMap;
+typedef map<base::serial_type, base::content_size> recordFormatMap;
+    
+struct RecordFormat {
+    long serialType;
+    long serialTypeSize;
+    long contentSize;
+};
 
-vector<Record> parseFreeBlock(base::bytes_it begin, base::bytes_it end);
+
+vector<string> parseRecordsFromFreeBlock(base::bytes_it begin,
+                                         base::bytes_it end);
     
 } // namespace sqliteparser
 
+
+// ------ old -------
+/*
 using std::string;
 
-typedef std::pair<int, unsigned> varint;
+// typedef std::pair<int, unsigned> varint;
 typedef std::vector<unsigned char> vec_uchar;
 
 void build_map();
@@ -51,5 +68,6 @@ private:
     
     int sqlitePageSize_;
 };
-
+*/
+ 
 #endif /* defined(__SqliteCarving__CellParser__) */
