@@ -22,7 +22,7 @@ base::varint_t parseVarint(base::bytes_it beg,
                            base::bytes_it end,
                            unsigned int offset = 0);
 
-bool isOdd(int num);
+bool isOdd(long num);
 
 
 template <typename T>

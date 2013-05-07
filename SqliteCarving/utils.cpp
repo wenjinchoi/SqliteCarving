@@ -59,7 +59,7 @@ base::varint_t parseVarint(base::bytes_it beg,
 
 
 
-bool isOdd(int num)
+bool isOdd(long num)
 {
     return bool(num & 1);
 }
