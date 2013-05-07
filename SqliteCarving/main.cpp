@@ -6,6 +6,7 @@
 //  Copyright (c) 2013 wenjin choi. All rights reserved.
 //
 
+#include <bitset>
 #include <iostream>
 #include <algorithm>
 
@@ -13,10 +14,44 @@
 #include "SqliteFileParser.h"
 #include "SqlitePageParser.h"
 #include "CellParser.h"
+#include "Schema.h"
 
 //#include "utils.h"
 
 using namespace std;
+
+void testCellParser2() {
+    const unsigned char testdata[] = {
+        0x3F, 0x00, 0x12, 0x00, 0x01, 0x17, 0x00, 0x04,
+        0x00, 0x01, 0x01, 0x01, 0x00, 0x00, 0x1D, 0x00,
+        0x01, 0x01, 0x01, 0x01, 0x01, 0x31, 0x30, 0x30,
+        0x38, 0x36, 0x50, 0xE2, 0x43, 0x20, 0x00, 0xFF,
+        0x01, 0x52, 0x65, 0x63, 0x6F, 0x72, 0x64, 0x20,
+        0x31, 0x00, 0x00, 0x00, 0x00
+    };
+    
+    base::bytes_t testBlock = base::bytes_t(&testdata[0], &testdata[43]);
+    
+    cout << "Bytes of cell:" << endl;
+    copy(testBlock.begin(), testBlock.end(),
+         ostream_iterator<int>(cout, " "));
+    cout << endl;
+    
+    vector<string> records;
+    records = sqliteparser::parseRecordsFromFreeBlock(testBlock.begin(),
+                                                      testBlock.end());
+    
+    if (records.empty()) {
+        cout << "Not matched." << endl;
+    } else {
+        cout << "Data:" << endl;
+        copy(records.begin(), records.end(),
+             ostream_iterator<string>(cout, " "));
+        cout << endl;
+    }
+    
+    
+}
 
 /*
 void testCellParser()
@@ -45,14 +80,29 @@ void testCellParser()
     parseTableLeafCell(vtd);
 }
 */
- 
-/*
+
+void reverse32InByte( void *val )
+{
+    unsigned int v = *((unsigned int *)val) ;
+    v = ((v & 0x000000FF) << 24) | ((v & 0x0000FF00) << 8) |
+    ((v & 0x00FF0000) >> 8) | ((v & 0xFF000000) >> 24) ;
+    *((unsigned int *)val) = v ;
+};
+
 void test_util() {
     char mem[2] = { 0x2B, 0x12 };
     int v = getValueFromMem<int>(mem, 2);
     std::cout << "value: " << v << std::endl;
 }
- */
+
+void test_util_float() {
+    // float f = 3.14;
+    uint8_t mem[4] = { 0xC3, 0xF5, 0x48, 0x40 };
+    unsigned int i = getValueFromMem<unsigned int>((char *)mem, 4);
+    reverse32InByte(&i);
+    float *f = (float *)&i;
+    cout << *f << endl;
+}
 
 void testSqliteFileParser()
 {
@@ -84,6 +134,16 @@ void testSqliteFileParser()
     }
     cout << endl;
     
+}
+
+void test_shema() {
+    string str_shema = string("CREATE TABLE sms (_id INTEGER PRIMARY KEY AUTOINCREMENT, thread_id INTEGER, address TEXT, person INTEGER, date INTEGER, protocol INTEGER, read INTEGER DEFAULT 0, status INTEGER DEFAULT -1, type INTEGER, reply_path_present INTEGER, subject TEXT, body TEXT, service_center TEXT, locked INTEGER DEFAULT 0, error_code INTEGER DEFAULT 0, seen INTEGER DEFAULT 0, deletable INTEGER DEFAULT 0);");
+    
+    SchemaParser schema = SchemaParser(str_shema);
+    std::vector<base::sql_type> result = schema.parse();
+    cout << "SQL TYPE:" << endl;
+    copy(result.begin(), result.end(),
+         ostream_iterator<base::sql_type>(cout, " "));
 }
 
 /*
@@ -124,7 +184,10 @@ int main(int argc, const char * argv[])
     // testCellParser();
 //    testSqlitePageParser();
 //    test_util();
-    testSqliteFileParser();
+//    testSqliteFileParser();
+//    test_util_float();
+//    testCellParser2();
+    test_shema();
     return 0;
 }
 
