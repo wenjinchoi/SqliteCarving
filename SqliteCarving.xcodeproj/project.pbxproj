@@ -10,6 +10,9 @@
 		0B87BD9517032B3F008DCFD9 /* main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 0B87BD9417032B3F008DCFD9 /* main.cpp */; };
 		0B87BD9717032B3F008DCFD9 /* SqliteCarving.1 in CopyFiles */ = {isa = PBXBuildFile; fileRef = 0B87BD9617032B3F008DCFD9 /* SqliteCarving.1 */; };
 		0B8A0FCB17060AFB00D53A34 /* utils.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 0B8A0FC917060AFB00D53A34 /* utils.cpp */; };
+		0B90015C17342E570033FB02 /* Cell.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 0B90015A17342E570033FB02 /* Cell.cpp */; };
+		0B9B085E171EF01B009EEF8E /* CellParser.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 0B87BD9D17033029008DCFD9 /* CellParser.cpp */; };
+		0B9F123917393EFF00653258 /* Schema.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 0B9F123717393EFF00653258 /* Schema.cpp */; };
 		0BB3A7F41711BBA100D0AE56 /* SqliteFileParser.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 0BB3A7F21711BBA100D0AE56 /* SqliteFileParser.cpp */; };
 		0BB3A7F71711CC2D00D0AE56 /* SqlitePageParser.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 0BB3A7F51711CC2D00D0AE56 /* SqlitePageParser.cpp */; };
 /* End PBXBuildFile section */
@@ -36,6 +39,10 @@
 		0B8A0FC917060AFB00D53A34 /* utils.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = utils.cpp; sourceTree = "<group>"; };
 		0B8A0FCA17060AFB00D53A34 /* utils.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = utils.h; sourceTree = "<group>"; };
 		0B8E30DF171B0C0200661DB5 /* basedef.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = basedef.h; sourceTree = "<group>"; };
+		0B90015A17342E570033FB02 /* Cell.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Cell.cpp; sourceTree = "<group>"; };
+		0B90015B17342E570033FB02 /* Cell.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Cell.h; sourceTree = "<group>"; };
+		0B9F123717393EFF00653258 /* Schema.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Schema.cpp; sourceTree = "<group>"; };
+		0B9F123817393EFF00653258 /* Schema.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Schema.h; sourceTree = "<group>"; };
 		0BB3A7F21711BBA100D0AE56 /* SqliteFileParser.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = SqliteFileParser.cpp; sourceTree = "<group>"; };
 		0BB3A7F31711BBA100D0AE56 /* SqliteFileParser.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SqliteFileParser.h; sourceTree = "<group>"; };
 		0BB3A7F51711CC2D00D0AE56 /* SqlitePageParser.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = SqlitePageParser.cpp; sourceTree = "<group>"; };
@@ -73,8 +80,12 @@
 			isa = PBXGroup;
 			children = (
 				0B87BD9417032B3F008DCFD9 /* main.cpp */,
+				0B9F123717393EFF00653258 /* Schema.cpp */,
+				0B9F123817393EFF00653258 /* Schema.h */,
 				0B87BD9D17033029008DCFD9 /* CellParser.cpp */,
 				0B87BD9E17033029008DCFD9 /* CellParser.h */,
+				0B90015A17342E570033FB02 /* Cell.cpp */,
+				0B90015B17342E570033FB02 /* Cell.h */,
 				0BB3A7F21711BBA100D0AE56 /* SqliteFileParser.cpp */,
 				0BB3A7F31711BBA100D0AE56 /* SqliteFileParser.h */,
 				0BB3A7F51711CC2D00D0AE56 /* SqlitePageParser.cpp */,
@@ -138,10 +149,13 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				0B9B085E171EF01B009EEF8E /* CellParser.cpp in Sources */,
 				0B87BD9517032B3F008DCFD9 /* main.cpp in Sources */,
 				0B8A0FCB17060AFB00D53A34 /* utils.cpp in Sources */,
 				0BB3A7F41711BBA100D0AE56 /* SqliteFileParser.cpp in Sources */,
 				0BB3A7F71711CC2D00D0AE56 /* SqlitePageParser.cpp in Sources */,
+				0B90015C17342E570033FB02 /* Cell.cpp in Sources */,
+				0B9F123917393EFF00653258 /* Schema.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -174,6 +188,7 @@
 				GCC_WARN_ABOUT_RETURN_TYPE = YES;
 				GCC_WARN_UNINITIALIZED_AUTOS = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
+				HEADER_SEARCH_PATHS = /usr/local/boost_1_53_0;
 				MACOSX_DEPLOYMENT_TARGET = 10.7;
 				ONLY_ACTIVE_ARCH = YES;
 				SDKROOT = macosx;
@@ -200,6 +215,7 @@
 				GCC_WARN_ABOUT_RETURN_TYPE = YES;
 				GCC_WARN_UNINITIALIZED_AUTOS = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
+				HEADER_SEARCH_PATHS = /usr/local/boost_1_53_0;
 				MACOSX_DEPLOYMENT_TARGET = 10.7;
 				SDKROOT = macosx;
 			};
