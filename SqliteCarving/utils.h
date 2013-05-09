@@ -15,8 +15,8 @@
 
 #include "basedef.h"
 
-std::pair<int, unsigned long> parseVarint(std::vector<unsigned char> varintBytes,
-                                          int offset=0);
+//std::pair<int, unsigned long> parseVarint(std::vector<unsigned char> varintBytes,
+//                                          int offset=0);
 
 base::varint_t parseVarint(base::bytes_it beg,
                            base::bytes_it end,

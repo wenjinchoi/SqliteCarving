@@ -45,6 +45,7 @@ base::varint_t parseVarint(base::bytes_it beg,
             isCompleted = true;
         }
         length += 1;
+        ++pos;
     }
     base::varint_t varint;
     if (isCompleted) {
