@@ -19,9 +19,9 @@ namespace sqliteparser {
 
 // FIXIT: only for test.
 // Need to auto parse the tmpl.
-vector<base::sql_type> testTmpl () {
+vector<base::sql_type> testTmpl() {
     RecordTmpl tmpl;
-    tmpl.push_back(base::SQL_TYPE_INT | base::SQL_TYPE_NULL);
+    //tmpl.push_back(base::SQL_TYPE_INT | base::SQL_TYPE_NULL);
     tmpl.push_back(base::SQL_TYPE_INT | base::SQL_TYPE_NULL);
     tmpl.push_back(base::SQL_TYPE_TEXT | base::SQL_TYPE_NULL);
     tmpl.push_back(base::SQL_TYPE_INT | base::SQL_TYPE_NULL);
@@ -182,13 +182,13 @@ string getStringFor(base::serial_type serialType, base::bytes_t& bytes) {
     base::sql_type sqlType = smap_pos->second;
     
     string result;
-    std::ostringstream convert;    
+    std::ostringstream convert;
     if (sqlType == base::SQL_TYPE_NULL) {
         convert << 0;
         result = convert.str();
     } else if (sqlType == base::SQL_TYPE_INT) {
-        int intValue =
-            getValueFromMem<int>((char *)&bytes[0],
+        uint64_t intValue =
+            getValueFromMem<uint64_t>((char *)&bytes[0],
                                  static_cast<int>(bytes.size()));
         convert << intValue;
         result = convert.str();
@@ -209,33 +209,56 @@ string getStringFor(base::serial_type serialType, base::bytes_t& bytes) {
     return result;
 }
 
+// FIXIT: 只能解析出第一条记录
 // 根据 sqlite db 的 schema, 获取指定表的的 schema(Template)
 // Record 的 Types 是 Varint，
 // 解析变长整数后与预设的 Map 进行匹配，得到相应的 SQL_TYPE
 // 当连续读取数据的 SQL_TYPE 都满足 Template，则判断找到一条记录
 // 再根据 Template 读取后面的 Data 区内容
-vector<string> parseRecordsFromFreeBlock(base::bytes_it begin,
-                                          base::bytes_it end) {
+vector<Record> parseRecordsFromFreeBlock(base::bytes_it begin,
+                                         base::bytes_it end,
+                                         vector<base::sql_type> tmpl) {
     // type 1, type 2, type 3, ..., data 1, data 2, data 3, ...
     // tmpl 1, tmpl 2, tmpl 3, ...|
-    vector<string> records;
-    vector<base::sql_type> tmpl = testTmpl();
+    vector<Record> records;
+    // FIXIT: 需要分析db文件提起模版
+    // tmpl = testTmpl();
     base::bytes_it pos;
     for (pos = begin; pos < end;) {
         vector<RecordFormat> rf = matchByesForTmpl(pos, end, tmpl);
         if (!rf.empty()) {
-            pos += calcHeaderSize(rf);
+            // 如果匹配模版
+            // pos += calcHeaderSize(rf);
+            base::bytes_it tmp_pos = pos + calcHeaderSize(rf);
+            Record record;
             for (vector<RecordFormat>::iterator rf_pos = rf.begin();
                  rf_pos != rf.end(); ++rf_pos) {
-                //FIXIT: bytes初始化有问题？
-                base::bytes_t bytes = base::bytes_t(pos, pos + rf_pos->contentSize);
-                // 根据 Serial Type 将 Data 区字节转换为 string
-                string content =
-                    getStringFor(rf_pos->serialType, bytes);
-                records.push_back(content);
-                pos += rf_pos->contentSize;
-            }
+                // 避免取 Data 时超出 FreeBlock 边界
+                string content;                
+                if (tmp_pos > end) {
+                    content = "[Missed]";
+                } else {
+                    base::bytes_it end_it = tmp_pos + rf_pos->contentSize;;
+                    
+                    if (end_it > end) {
+                        end_it = end;
+                    }
+                    
+                    base::bytes_t bytes = base::bytes_t(tmp_pos, end_it);
+                    if (bytes.empty()) {
+                        content = "[NULL]";
+                    } else {
+                        content =
+                        getStringFor(rf_pos->serialType, bytes);
+                    }
+                }
 
+                record.push_back(content);
+                // 如果是 pos += rf_pos->contentSize，可能会跳过一些数据
+                tmp_pos += rf_pos->contentSize;
+            }
+            records.push_back(record);
+            pos += calcHeaderSize(rf);
         } else {
             ++pos;
         }

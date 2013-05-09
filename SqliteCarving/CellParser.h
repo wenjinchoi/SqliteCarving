@@ -26,6 +26,8 @@ namespace sqliteparser {
 typedef vector<base::sql_type> RecordTmpl;
 typedef vector<string> Records;
     
+typedef vector<string> Record;
+    
 typedef map<base::serial_type, base::sql_type> sTypeSqlTypeMap;
 typedef map<base::serial_type, base::content_size> recordFormatMap;
     
@@ -36,8 +38,11 @@ struct RecordFormat {
 };
 
 
-vector<string> parseRecordsFromFreeBlock(base::bytes_it begin,
-                                         base::bytes_it end);
+vector<base::sql_type> testTmpl();
+    
+vector<Record> parseRecordsFromFreeBlock(base::bytes_it begin,
+                                         base::bytes_it end,
+                                         vector<base::sql_type> tmpl);
     
 } // namespace sqliteparser
 

@@ -1,0 +1,13 @@
+
+TODO
+1. 没有考虑 Overflow 的情况
+2. 编译为可执行程序，接受1个参数：DB文件路径
+3. BLOB 和 FLOAT 数据还不能解析
+4. 获取DB文件中，指定 Table 的 Scheme，并解析出 SQL TYPE
+
+Bugs:
+1. [Fixed] FreeBlocks 获取不准
+2. 分析 Scheme 时，应该要移除第一列，因为它可能会被覆盖
+
+Other:
+1. 解析性能： 9100 Bytes/s  533 KB/min

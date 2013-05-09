@@ -58,8 +58,9 @@ vector<base::cellInfo> getCellList(base::bytes_t& page) {
          pos != cellPtrs.end(); ++pos) {
         base::cellInfo cell_info;
         cell_info.offset = *pos;
-        base::varint_t vint = parseVarint(page.begin() + *pos, page.end());
-        cell_info.length = vint.value;
+        base::varint_t vint_playload = parseVarint(page.begin() + *pos, page.end());
+        base::varint_t vint_rowid = parseVarint(page.begin() + *pos + vint_playload.length, page.end());
+        cell_info.length = vint_playload.value + vint_playload.length + vint_rowid.length;
         cellInfos.push_back(cell_info);
     }
     return cellInfos;
@@ -71,6 +72,9 @@ vector<base::blockArea> getFreeBlockAreaList(base::bytes_t& page) {
     
     tableLeafHeader tlh = getTableLeafHeader(page);
     vector<base::cellInfo> cellList = getCellList(page);
+    if (cellList.empty()) {
+        return freeBlockAreaList;
+    }
     base::blockArea first;
     first.begin = tlh.numOfCells * 2 + 8;
     first.end = cellList[cellList.size() - 1].offset - 1;
@@ -79,12 +83,17 @@ vector<base::blockArea> getFreeBlockAreaList(base::bytes_t& page) {
     if (cellList.size() > 1) {
         // Cell List 是自底向上增长的，所以这里使用反向迭代器遍历
         vector<base::cellInfo>::reverse_iterator rpos;
-        for (rpos =  cellList.rbegin() + 1;
+        for (rpos =  cellList.rbegin();
              rpos != cellList.rend(); ++rpos) {
             base::blockArea block;
             block.begin = rpos->offset;
             block.end = rpos->offset + rpos->length;
-            freeBlockAreaList.push_back(block);
+            vector<base::cellInfo>::reverse_iterator tmp_rpos = rpos + 1;
+            // FIXIT: make 4 as a const var (最小空闲空间大小）
+            if (block.end < tmp_rpos->offset - 4 &&
+                block.end < page.size() - 4) {
+                freeBlockAreaList.push_back(block);
+            }
         }
     }
     return freeBlockAreaList;

@@ -37,21 +37,35 @@ void testCellParser2() {
          ostream_iterator<int>(cout, " "));
     cout << endl;
     
-    vector<string> records;
+    vector<sqliteparser::Record> records;
+    vector<base::sql_type> tmpl = sqliteparser::testTmpl();
     records = sqliteparser::parseRecordsFromFreeBlock(testBlock.begin(),
-                                                      testBlock.end());
+                                                      testBlock.end(),
+                                                      tmpl);
     
     if (records.empty()) {
         cout << "Not matched." << endl;
     } else {
-        cout << "Data:" << endl;
-        copy(records.begin(), records.end(),
-             ostream_iterator<string>(cout, " "));
-        cout << endl;
+        for (vector<sqliteparser::Record>::iterator pos = records.begin(); pos != records.end(); ++pos) {
+            cout << "Data:" << endl;
+            copy(pos->begin(), pos->end(),
+                 ostream_iterator<string>(cout, " "));
+            cout << endl;
+        }
     }
     
     
 }
+
+void test_parse_vint() {
+    unsigned char testdata[] = { 0x85, 0x7B, 0x29, 0x08, 0x08, 0x09, 0x0E,
+        0x31, 0x30, 0x30, 0x38 };
+    base::bytes_t testBlock = base::bytes_t(&testdata[0], &testdata[11]);
+    base::varint_t vint = parseVarint(testBlock.begin(), testBlock.end());
+    cout << "vint: " << vint.value << endl;
+    
+}
+
 
 /*
 void testCellParser()
@@ -106,7 +120,7 @@ void test_util_float() {
 
 void testSqliteFileParser()
 {
-    string filename = string("/Users/wenjinchoi/Desktop/mmssms_del5.db");
+    string filename = string("/Users/wenjinchoi/Desktop/samsung_GT-9250-4.2.2-mmssms.db");
     
     unsigned int pageSize1 = sqliteparser::pageSize(filename);
     unsigned long sizeOfPages1 = sqliteparser::sizeOfPages(filename);
@@ -115,8 +129,8 @@ void testSqliteFileParser()
          << " Size of Pages: " << sizeOfPages1
          << " Is Auto Vacuum:" << isAutoVacuum1 << endl;
     
-    cout << "Page at 2: " << endl;
-    base::bytes_t thePage = sqliteparser::pageAt(filename, 2);
+    cout << "Page at 10: " << endl;
+    base::bytes_t thePage = sqliteparser::pageAt(filename, 10);
     copy(thePage.begin(), thePage.end(),
          ostream_iterator<char>(cout, ""));
     cout << endl << endl;
@@ -146,6 +160,64 @@ void test_shema() {
          ostream_iterator<base::sql_type>(cout, " "));
 }
 
+
+void testMain() {
+    
+    // I9250
+    string sms_schema = string("CREATE TABLE sms (_id INTEGER PRIMARY KEY,thread_id INTEGER,address TEXT,person INTEGER,date INTEGER,date_sent INTEGER DEFAULT 0,protocol INTEGER,read INTEGER DEFAULT 0,status INTEGER DEFAULT -1,type INTEGER,reply_path_present INTEGER,subject TEXT,body TEXT,service_center TEXT,locked INTEGER DEFAULT 0,error_code INTEGER DEFAULT 0,seen INTEGER DEFAULT 0);");
+    
+ 
+    // n7100
+//    string sms_schema = string("CREATE TABLE sms (_id INTEGER PRIMARY KEY AUTOINCREMENT,thread_id INTEGER,address TEXT,person INTEGER,date INTEGER,date_sent INTEGER DEFAULT 0,protocol INTEGER,read INTEGER DEFAULT 0,status INTEGER DEFAULT -1,type INTEGER,reply_path_present INTEGER,subject TEXT,body TEXT,service_center TEXT,locked INTEGER DEFAULT 0,error_code INTEGER DEFAULT 0,seen INTEGER DEFAULT 0,deletable INTEGER DEFAULT 0,hidden INTEGER DEFAULT 0,group_id INTEGER,group_type INTEGER,delivery_date INTEGER,app_id INTEGER DEFAULT 0,msg_id INTEGER DEFAULT 0,callback_number TEXT,reserved INTEGER DEFAULT 0,pri INTEGER DEFAULT 0,teleservice_id INTEGER DEFAULT 0,link_url TEXT);");
+
+    // d710
+//    string sms_schema = string("CREATE TABLE sms (_id INTEGER PRIMARY KEY AUTOINCREMENT,thread_id INTEGER,address TEXT,person INTEGER,date INTEGER,protocol INTEGER,read INTEGER DEFAULT 0,status INTEGER DEFAULT -1,type INTEGER,reply_path_present INTEGER,subject TEXT,body TEXT,service_center TEXT,locked INTEGER DEFAULT 0,error_code INTEGER DEFAULT 0,seen INTEGER DEFAULT 0,deletable INTEGER DEFAULT 0,hidden INTEGER DEFAULT 0,group_id INTEGER,group_type INTEGER,delivery_date INTEGER,service_category INTEGER,category INTEGER,response_type INTEGER,severity INTEGER,urgency INTEGER,certainty INTEGER,identifier INTEGER,alert_handling INTEGER,expires INTEGER,language INTEGER,cmas_sms_expired INTEGER DEFAULT 1);");
+    
+    SchemaParser schema = SchemaParser(sms_schema);
+    vector<base::sql_type> sms_tmpl = schema.parse();
+    sms_tmpl.erase(sms_tmpl.begin());
+    
+    cout << "SQL TYPE:" << endl;
+    copy(sms_tmpl.begin(), sms_tmpl.end(),
+         ostream_iterator<base::sql_type>(cout, " "));
+    cout << endl;
+    
+    
+    string filename = string("/Users/wenjinchoi/Desktop/samsung_GT-9250-4.2.2-mmssms.db");
+    unsigned long sizeOfPages = sqliteparser::sizeOfPages(filename);
+    
+    for (int i = 1; i <= sizeOfPages; ++i) {
+        base::bytes_t page = sqliteparser::pageAt(filename, i);
+        if (sqliteparser::isTableLeaf(page)) {
+            vector<base::blockArea> freeblocks =
+                sqliteparser::getFreeBlockAreaList(page);
+            for (vector<base::blockArea>::iterator pos = freeblocks.begin();
+                 pos != freeblocks.end(); ++pos) {
+                vector<base::sql_type> tmpl = sqliteparser::testTmpl();
+                // FOR TEST
+                vector<sqliteparser::Record> result =
+                    sqliteparser::parseRecordsFromFreeBlock(page.begin() + pos->begin, page.begin() + pos->end, sms_tmpl);
+//                vector<sqliteparser::Record> result =
+//                sqliteparser::parseRecordsFromFreeBlock(page.begin(), page.end(), sms_tmpl);
+                if (result.empty()) {
+                    cout << "[Unmatched] No matched item in free block at page " << i
+                         << " Offset: " << pos->begin << "~" << pos->end
+                         << endl;
+                } else {
+                    // cout << "Data:" << endl;
+                    int num = 1;
+                    for (vector<sqliteparser::Record>::iterator r_pos = result.begin(); r_pos != result.end(); ++r_pos) {
+                        cout << "Data " << num++ << ":";
+                        copy(r_pos->begin(), r_pos->end(),
+                             ostream_iterator<string>(cout, " "));
+                        cout << endl;
+                    }
+                }
+            }
+        }
+        
+    }
+}
 /*
 void testSqlitePageParser()
 {
@@ -181,13 +253,15 @@ void testSqlitePageParser()
 
 int main(int argc, const char * argv[])
 {
-    // testCellParser();
+//    test_parse_vint();
+//    testCellParser();
 //    testSqlitePageParser();
 //    test_util();
 //    testSqliteFileParser();
 //    test_util_float();
 //    testCellParser2();
-    test_shema();
+//    test_shema();
+    testMain();
     return 0;
 }
 

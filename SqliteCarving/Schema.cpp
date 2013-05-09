@@ -53,6 +53,7 @@ std::vector<base::sql_type> SchemaParser::parse() {
 //              std::ostream_iterator<string>(std::cout, "\n"));
 //    std::cout << std::endl;
     
+    
     std::vector<string>::iterator pos;
     for (pos = column_vec_.begin(); pos != column_vec_.end(); ++pos) {
         base::sql_type sql_type = getSqlTypeFor(*pos);
