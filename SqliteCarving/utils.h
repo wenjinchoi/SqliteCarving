@@ -24,6 +24,10 @@ base::varint_t parseVarint(base::bytes_it beg,
 
 bool isOdd(long num);
 
+void reverse32InByte(void *val);
+
+std::string getSchemaFor(const std::string& dbFilePath,
+                         const std::string& tableName);
 
 template <typename T>
 T getValueFromMem(char* memblock, int length) {
