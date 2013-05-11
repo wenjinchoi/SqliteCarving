@@ -15,8 +15,7 @@
 #include "SqlitePageParser.h"
 #include "CellParser.h"
 #include "Schema.h"
-
-//#include "utils.h"
+#include "utils.h"
 
 using namespace std;
 
@@ -66,43 +65,6 @@ void test_parse_vint() {
     
 }
 
-
-/*
-void testCellParser()
-{
-    const unsigned char testdata[] = {
-        0x2B, 0x01, 0x12, 0x00, 0x01, 0x17, 0x00, 0x04,
-        0x00, 0x01, 0x01, 0x01, 0x00, 0x00, 0x1D, 0x00,
-        0x01, 0x01, 0x01, 0x01, 0x01, 0x31, 0x30, 0x30,
-        0x38, 0x36, 0x50, 0xE2, 0x43, 0x20, 0x00, 0xFF,
-        0x01, 0x52, 0x65, 0x63, 0x6F, 0x72, 0x64, 0x20,
-        0x31, 0x00, 0x00, 0x00, 0x00
-    };
-    
-    build_map();
-    
-    int length = sizeof(testdata)/sizeof(unsigned char);
-    vec_uchar vtd;
-    for (int i = 0; i < length; ++i) {
-        vtd.push_back(testdata[i]);
-    }
-    
-    cout << "Test Data: " << endl;
-    copy(vtd.begin(), vtd.end(), ostream_iterator<int>(cout, " "));
-    cout << endl << endl;
-    
-    parseTableLeafCell(vtd);
-}
-*/
-
-void reverse32InByte( void *val )
-{
-    unsigned int v = *((unsigned int *)val) ;
-    v = ((v & 0x000000FF) << 24) | ((v & 0x0000FF00) << 8) |
-    ((v & 0x00FF0000) >> 8) | ((v & 0xFF000000) >> 24) ;
-    *((unsigned int *)val) = v ;
-};
-
 void test_util() {
     char mem[2] = { 0x2B, 0x12 };
     int v = getValueFromMem<int>(mem, 2);
@@ -110,6 +72,7 @@ void test_util() {
 }
 
 void test_util_float() {
+    // TODO: 需完成从内存块取 Float 的功能
     // float f = 3.14;
     uint8_t mem[4] = { 0xC3, 0xF5, 0x48, 0x40 };
     unsigned int i = getValueFromMem<unsigned int>((char *)mem, 4);
@@ -161,18 +124,8 @@ void test_shema() {
 }
 
 
-void testMain() {
-    
-    // I9250
-    string sms_schema = string("CREATE TABLE sms (_id INTEGER PRIMARY KEY,thread_id INTEGER,address TEXT,person INTEGER,date INTEGER,date_sent INTEGER DEFAULT 0,protocol INTEGER,read INTEGER DEFAULT 0,status INTEGER DEFAULT -1,type INTEGER,reply_path_present INTEGER,subject TEXT,body TEXT,service_center TEXT,locked INTEGER DEFAULT 0,error_code INTEGER DEFAULT 0,seen INTEGER DEFAULT 0);");
-    
- 
-    // n7100
-//    string sms_schema = string("CREATE TABLE sms (_id INTEGER PRIMARY KEY AUTOINCREMENT,thread_id INTEGER,address TEXT,person INTEGER,date INTEGER,date_sent INTEGER DEFAULT 0,protocol INTEGER,read INTEGER DEFAULT 0,status INTEGER DEFAULT -1,type INTEGER,reply_path_present INTEGER,subject TEXT,body TEXT,service_center TEXT,locked INTEGER DEFAULT 0,error_code INTEGER DEFAULT 0,seen INTEGER DEFAULT 0,deletable INTEGER DEFAULT 0,hidden INTEGER DEFAULT 0,group_id INTEGER,group_type INTEGER,delivery_date INTEGER,app_id INTEGER DEFAULT 0,msg_id INTEGER DEFAULT 0,callback_number TEXT,reserved INTEGER DEFAULT 0,pri INTEGER DEFAULT 0,teleservice_id INTEGER DEFAULT 0,link_url TEXT);");
-
-    // d710
-//    string sms_schema = string("CREATE TABLE sms (_id INTEGER PRIMARY KEY AUTOINCREMENT,thread_id INTEGER,address TEXT,person INTEGER,date INTEGER,protocol INTEGER,read INTEGER DEFAULT 0,status INTEGER DEFAULT -1,type INTEGER,reply_path_present INTEGER,subject TEXT,body TEXT,service_center TEXT,locked INTEGER DEFAULT 0,error_code INTEGER DEFAULT 0,seen INTEGER DEFAULT 0,deletable INTEGER DEFAULT 0,hidden INTEGER DEFAULT 0,group_id INTEGER,group_type INTEGER,delivery_date INTEGER,service_category INTEGER,category INTEGER,response_type INTEGER,severity INTEGER,urgency INTEGER,certainty INTEGER,identifier INTEGER,alert_handling INTEGER,expires INTEGER,language INTEGER,cmas_sms_expired INTEGER DEFAULT 1);");
-    
+void testMain(const string& dbFilePath, const string& tableName) {
+    string sms_schema = getSchemaFor(dbFilePath, tableName);
     SchemaParser schema = SchemaParser(sms_schema);
     vector<base::sql_type> sms_tmpl = schema.parse();
     sms_tmpl.erase(sms_tmpl.begin());
@@ -180,34 +133,30 @@ void testMain() {
     cout << "SQL TYPE:" << endl;
     copy(sms_tmpl.begin(), sms_tmpl.end(),
          ostream_iterator<base::sql_type>(cout, " "));
-    cout << endl;
+    cout << endl << endl;
     
+    unsigned long sizeOfPages = sqliteparser::sizeOfPages(dbFilePath);
     
-    string filename = string("/Users/wenjinchoi/Desktop/samsung_GT-9250-4.2.2-mmssms.db");
-    unsigned long sizeOfPages = sqliteparser::sizeOfPages(filename);
-    
+    int dataCount = 1;
     for (int i = 1; i <= sizeOfPages; ++i) {
-        base::bytes_t page = sqliteparser::pageAt(filename, i);
+        base::bytes_t page = sqliteparser::pageAt(dbFilePath, i);
         if (sqliteparser::isTableLeaf(page)) {
             vector<base::blockArea> freeblocks =
                 sqliteparser::getFreeBlockAreaList(page);
             for (vector<base::blockArea>::iterator pos = freeblocks.begin();
                  pos != freeblocks.end(); ++pos) {
-                vector<base::sql_type> tmpl = sqliteparser::testTmpl();
                 // FOR TEST
-                vector<sqliteparser::Record> result =
-                    sqliteparser::parseRecordsFromFreeBlock(page.begin() + pos->begin, page.begin() + pos->end, sms_tmpl);
 //                vector<sqliteparser::Record> result =
-//                sqliteparser::parseRecordsFromFreeBlock(page.begin(), page.end(), sms_tmpl);
+//                    sqliteparser::parseRecordsFromFreeBlock(page.begin() + pos->begin, page.begin() + pos->end, sms_tmpl);
+                vector<sqliteparser::Record> result =
+                sqliteparser::parseRecordsFromFreeBlock(page.begin(), page.end(), sms_tmpl);
                 if (result.empty()) {
                     cout << "[Unmatched] No matched item in free block at page " << i
                          << " Offset: " << pos->begin << "~" << pos->end
                          << endl;
                 } else {
-                    // cout << "Data:" << endl;
-                    int num = 1;
                     for (vector<sqliteparser::Record>::iterator r_pos = result.begin(); r_pos != result.end(); ++r_pos) {
-                        cout << "Data " << num++ << ":";
+                        cout << "Data " << dataCount++ << ": ";
                         copy(r_pos->begin(), r_pos->end(),
                              ostream_iterator<string>(cout, " "));
                         cout << endl;
@@ -218,50 +167,36 @@ void testMain() {
         
     }
 }
-/*
-void testSqlitePageParser()
-{
-    SqliteFileParser fparser = SqliteFileParser();
-    fparser.setInputFile("/Users/wenjinchoi/Desktop/mmssms_2infreeblock.db");
-    base::bytes_t thePage = fparser.pageAt(2);
-    
-    using sqlparser::SqlitePageParser;
-    SqlitePageParser pparser = SqlitePageParser(thePage);
-    pparser.parsePage();
-    
-    std::vector<uint16_t> cellList = pparser.cellList();
-    std::cout << "Cell list: ";
-    copy(cellList.begin(), cellList.end(),
-         ostream_iterator<uint16_t>(std::cout, " "));
-    std::cout << endl;
-    
-    std::cout << "First free block offset: "
-              << pparser.firstFreeBlockOffset() << std::endl;
-    
-    std::vector<std::pair<uint16_t, uint16_t> > freeBlocArea;
-    freeBlocArea = pparser.freeBlockAreaList();
-    std::cout << "Free Block Aree List: ";
-    
-    std::vector<std::pair<uint16_t, uint16_t> >::iterator pos;
-    for (pos = freeBlocArea.begin(); pos != freeBlocArea.end(); ++pos) {
-        std::cout << "[" << pos->first << ", " << pos->second << "], ";
-    }
-    std::cout << std::endl;
-}
-*/
 
+
+void test_cmd() {
+    string result = getSchemaFor("/Users/wenjinchoi/Desktop/samsung_GT-9100-4.0.4_mmssms.db", "sms");
+    cout << "Schema for sms:" << endl;
+    cout << result;
+}
 
 int main(int argc, const char * argv[])
 {
 //    test_parse_vint();
-//    testCellParser();
-//    testSqlitePageParser();
 //    test_util();
 //    testSqliteFileParser();
 //    test_util_float();
 //    testCellParser2();
 //    test_shema();
-    testMain();
+//    test_cmd();
+    
+//    string filename = string("/Users/wenjinchoi/Desktop/samsung_GT-9100-4.0.4_mmssms.db");
+//    string tableName = string("sms");
+    
+    if (argc < 3) {
+        cout << "Usage:" << endl;
+        cout << "  SqliteCarving [database path] [table name]" << endl;
+        exit(1);
+    }
+    
+    string filename = string(argv[1]);
+    string tableName = string(argv[2]);    
+    testMain(filename, tableName);
     return 0;
 }
 
