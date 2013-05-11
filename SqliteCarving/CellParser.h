@@ -37,7 +37,7 @@ struct RecordFormat {
     long contentSize;
 };
 
-
+// FIXIT: 只用作测试，待废弃
 vector<base::sql_type> testTmpl();
     
 vector<Record> parseRecordsFromFreeBlock(base::bytes_it begin,
@@ -45,34 +45,5 @@ vector<Record> parseRecordsFromFreeBlock(base::bytes_it begin,
                                          vector<base::sql_type> tmpl);
     
 } // namespace sqliteparser
-
-
-// ------ old -------
-/*
-using std::string;
-
-// typedef std::pair<int, unsigned> varint;
-typedef std::vector<unsigned char> vec_uchar;
-
-void build_map();
-void parseTableLeafCell(vec_uchar cellContent);
-
-class SqliteCarving {
-public:
-    SqliteCarving();
-    ~SqliteCarving();
-    
-    void setFile(const string sqliteFile);
-    void setParameters(const int sqlitePageSize);
-    void carve();
-
-private:
-    void parseTableLeafCell();
-    void parseTableLeafCellPlayload();
-    void parseColumnValue();
-    
-    int sqlitePageSize_;
-};
-*/
  
 #endif /* defined(__SqliteCarving__CellParser__) */
