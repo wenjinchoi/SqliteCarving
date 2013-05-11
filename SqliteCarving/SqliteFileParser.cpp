@@ -10,12 +10,27 @@
 
 #include "SqliteFileParser.h"
 
+std::ifstream::pos_type filesize(const char* filename)
+{
+    std::ifstream in(filename, std::ifstream::in | std::ifstream::binary);
+    in.seekg(0, std::ifstream::end);
+    return in.tellg();
+}
+
 unsigned int sqliteparser::pageSize(std::string sqliteFile) {
     return getValueFromFile<unsigned int>(sqliteFile, 16, 2);
 }
 
 unsigned long sqliteparser::sizeOfPages(std::string sqliteFile) {
-    return getValueFromFile<unsigned long>(sqliteFile, 28, 4);
+    unsigned long size =
+        getValueFromFile<unsigned long>(sqliteFile, 28, 4);
+    if (size != 0) {
+        return size;
+    } else {
+        unsigned long num =
+            filesize(sqliteFile.c_str())/pageSize(sqliteFile);
+        return num;
+    }
 }
 
 bool sqliteparser::isAutoVacuum(std::string sqliteFile) {
