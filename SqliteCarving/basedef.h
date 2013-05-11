@@ -18,7 +18,6 @@ typedef int sql_type;
 typedef long serial_type;
 typedef long content_size;
     
-    
 typedef uint8_t byte_t;
 typedef std::vector<uint8_t> bytes_t;
 typedef bytes_t::iterator bytes_it;
@@ -68,7 +67,6 @@ const int STYPE_CONST0 = 8;  // const 0     0
 const int STYPE_CONST1 = 9;  // const 1     0
 const int STYPE_BLOB   = 12; // blob        (N-12)/2
 const int STYPE_TEXT   = 13; // text        (N-13)/2
-    
-    
+
 } // namespace base
 #endif

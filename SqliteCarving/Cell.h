@@ -6,6 +6,8 @@
 //  Copyright (c) 2013 wenjin choi. All rights reserved.
 //
 
+//  TODO: 根据 CellParser 重构的类，未实现
+
 #ifndef __SqliteCarving__Cell__
 #define __SqliteCarving__Cell__
 
