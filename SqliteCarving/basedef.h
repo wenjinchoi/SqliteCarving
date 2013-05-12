@@ -46,6 +46,7 @@ struct blockArea {
 };
 
 // SQL Type
+const int SQL_TYPE_UNKNOWN = 0;
 const int SQL_TYPE_INT = 1;
 const int SQL_TYPE_TEXT = 2;
 const int SQL_TYPE_FLOAT = 4;
