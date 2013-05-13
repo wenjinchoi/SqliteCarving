@@ -12,7 +12,6 @@
 #include <sstream>
 
 namespace sqliteparser {
-    
 
 // FIXIT: 以下 Map 要找个适合的地方放置
 recordFormatMap getRecordFormatMap() {
@@ -65,32 +64,7 @@ base::sql_type sqlTypeFor(long serialTypeValue) {
     }
     return sqlType;
 }
-    
-// 废弃的方法，返回的对象不够完整
-RecordFormat recordFormatFor(long serialTypeValue) {
-    recordFormatMap rf_map = getRecordFormatMap();
-    RecordFormat rf;
-    base::sql_type sqlType = sqlTypeFor(serialTypeValue);
-    switch (sqlType) {
-        case base::SQL_TYPE_NULL:
-        case base::SQL_TYPE_INT:
-        case base::SQL_TYPE_FLOAT:
-            rf.serialType = serialTypeValue;
-            rf.contentSize = rf_map[static_cast<int>(serialTypeValue)];
-            break;
-        case base::SQL_TYPE_BLOB:
-            rf.serialType = base::STYPE_BLOB;
-            rf.contentSize = (serialTypeValue - 12) / 2;
-            break;
-        case base::SQL_TYPE_TEXT:
-            rf.serialType = base::STYPE_TEXT;
-            rf.contentSize = (serialTypeValue - 13) / 2;
-            break;
-        default:
-            break;
-    }
-    return rf;
-}
+
     
 RecordFormat recordFormatFor(base::varint_t& serialType) {
     recordFormatMap rf_map = getRecordFormatMap();
@@ -123,9 +97,9 @@ RecordFormat recordFormatFor(base::varint_t& serialType) {
 // 匹配一段 bytes 是否符合模版
 // 如果匹配，返回 vector<RecordFormat>
 // 否则返回一个空的 vector<RecordFormat>
-vector<RecordFormat> matchByesForTmpl(base::bytes_it begin,
-                                      base::bytes_it end,
-                                      vector<base::sql_type>& tmpl) {
+RecordFormats matchBytesForTmpl(base::bytes_it begin,
+                                base::bytes_it end,
+                                SqlTypeTmpl& tmpl) {
     vector<RecordFormat> reccordFormats;
     size_t tmpl_size = tmpl.size();
     int matchedCount = 0;
@@ -151,7 +125,7 @@ vector<RecordFormat> matchByesForTmpl(base::bytes_it begin,
     reccordFormats.clear();
     return reccordFormats;
 }
-
+    
 // 根据 vector<RecordFormat>，计算 Header 的长度
 long calcHeaderSize(vector<RecordFormat>& recordFormats) {
     long size = 0;
@@ -195,67 +169,76 @@ string getStringFor(base::serial_type serialType, base::bytes_t& bytes) {
     }
     return result;
 }
+
+bool canParsePartially(base::sql_type sqlType) {
+    return sqlType == base::SQL_TYPE_TEXT || sqlType == base::SQL_TYPE_BLOB;
+}
+
+
     
 size_t FreeBlock::size() {
     return freeBlock_.size();
 }
 
-void FreeBlock::setTemplate(RecordTmpl& recordTmpl) {
-    recordTmpl_ = recordTmpl;
+    
+void FreeBlock::setSqlTypeTmpl(SqlTypeTmpl& sqlTypeTmpl) {
+    sqlTypeTmpl_ = sqlTypeTmpl;
 }
 
-// FIXIT: 可能需要根据吓一条记录，再对上一条记录优化
-// FIXIT: 函数太长了，需要再拆分下
-// 根据 sqlite db 的 schema, 获取指定表的的 schema(Template)
-// Record 的 Types 是 Varint，
-// 解析变长整数后与预设的 Map 进行匹配，得到相应的 SQL_TYPE
-// 当连续读取数据的 SQL_TYPE 都满足 Template，则判断找到一条记录
-// 再根据 Template 读取后面的 Data 区内容
-// 如果完全满足当前的 RecordTmpl，则取出 Data 区的数据
-// Data 区尾不能跨越到已存在数据块
-// 如果仍未到达 end，则继续解析
+    
+// FIXIT: 可能需要根据吓一条记录，再对上一条记录优化(裁剪掉无效部分）
 vector<CellData> FreeBlock::parseCellDatas() {
-    base::bytes_it pos;
-    for (pos = freeBlock_.begin();
+    for (base::bytes_it pos = freeBlock_.begin();
          pos < freeBlock_.end();) {
-        vector<RecordFormat> rf = matchByesForTmpl(pos,
-                                                   freeBlock_.end(),
-                                                   recordTmpl_);
+        RecordFormats rf = matchBytes(pos);
         if (!rf.empty()) {
             // 如果匹配模版
-            // pos += calcHeaderSize(rf);
             base::bytes_it data_pos = pos + calcHeaderSize(rf);
-            Record record;
-            for (vector<RecordFormat>::iterator rf_pos = rf.begin();
-                 rf_pos != rf.end(); ++rf_pos) {
-                // 避免取 Data 时超出 FreeBlock 边界
-                string content;
-                if (data_pos > freeBlock_.end()) {
-                    content = "[Missed]";
-                } else {
-                    base::bytes_it end_it = data_pos + rf_pos->contentSize;
-                    if (end_it > freeBlock_.end()) {
-                        end_it = freeBlock_.end();
-                    }
-                    base::bytes_t bytes = base::bytes_t(data_pos, end_it);
-                    if (bytes.empty()) {
-                        content = "[NULL]";
-                    } else {
-                        content =
-                        getStringFor(rf_pos->serialType, bytes);
-                    }
-                }
-                record.push_back(content);
-                // 如果是 pos += rf_pos->contentSize，可能会跳过一些数据
-                data_pos += rf_pos->contentSize;
-            }
-            cellDatas_.push_back(record);
+            CellData cellData = parseData(data_pos, rf);
+            cellDatas_.push_back(cellData);
             pos += calcHeaderSize(rf);
         } else {
             ++pos; // 继续匹配下一字节
         }
     }
     return cellDatas_;
+}
+
+    
+string FreeBlock::getData(base::bytes_it data_start,
+                          RecordFormats::iterator rf_pos) {
+    base::bytes_it data_end = data_start + rf_pos->contentSize;
+    base::sql_type sqlType = sqlTypeFor(rf_pos->serialType);
+    if (data_end > freeBlock_.end() && canParsePartially(sqlType))  {
+        data_end = freeBlock_.end();
+    }
+    base::bytes_t bytes = base::bytes_t(data_start, data_end);
+    return getStringFor(rf_pos->serialType, bytes);
+}
+    
+
+CellData FreeBlock::parseData(base::bytes_it data_start,
+                              RecordFormats& rf) {
+    CellData result;
+    for (RecordFormats::iterator rf_pos = rf.begin();
+         rf_pos != rf.end(); ++rf_pos) {
+        string content;
+        if (data_start >= freeBlock_.end()) {
+            content = "[Missed]";
+        } else if (rf_pos->contentSize == 0) {
+            content = "[NULL]";
+        } else {
+            content = getData(data_start, rf_pos);
+        }
+        result.push_back(content);
+        data_start += rf_pos->contentSize;
+    }
+    return result;
+}
+
+    
+RecordFormats FreeBlock::matchBytes(base::bytes_it begin) {
+    return matchBytesForTmpl(begin, freeBlock_.end(), sqlTypeTmpl_);
 }
     
 } // namespace sqliteparser

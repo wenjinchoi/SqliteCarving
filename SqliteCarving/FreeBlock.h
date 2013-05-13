@@ -23,11 +23,11 @@ using std::map;
 
 namespace sqliteparser {
 
+// FIXIT: 需要移走到其他地方
 typedef map<base::serial_type, base::sql_type> sTypeSqlTypeMap;
 typedef map<base::serial_type, base::content_size> recordFormatMap;
     
-typedef vector<base::sql_type> RecordTmpl;
-typedef vector<string> Record; // 准备废弃
+typedef vector<base::sql_type> SqlTypeTmpl;
 typedef vector<string> CellData;
     
 struct RecordFormat {
@@ -35,33 +35,39 @@ struct RecordFormat {
     long serialTypeSize;
     long contentSize;
 };
-    
+
+typedef vector<RecordFormat> RecordFormats;
     
 class FreeBlock {    
-public:
-    typedef vector<string> CellData;
-
-    // typedef vector<string> Records;
-    
-    
-    
+public:    
     FreeBlock();
     FreeBlock(base::bytes_t& bytes) : freeBlock_(bytes) {}
     FreeBlock(base::bytes_it begin, base::bytes_it end)
-    : freeBlock_(begin, end) {}
-    
+      : freeBlock_(begin, end) {}
     ~FreeBlock();
     
-    // typedef std::vector<base::serial_type> CellHeader;
-    
+    // 返回 FreeBlock 的大小（字节数）
     size_t size();
-    void setTemplate(RecordTmpl& recordTmpl);
+    
+    // 设置用于匹配的 SQL Type 模版
+    void setSqlTypeTmpl(SqlTypeTmpl& sqlTypeTmpl);
+    
+    // 根据设置的模版解析 CellData
+    // 如果没有设置模版，则返回空数组
     vector<CellData> parseCellDatas();
 
 private:
     base::bytes_t freeBlock_;
-    RecordTmpl recordTmpl_;
+    SqlTypeTmpl sqlTypeTmpl_;
     std::vector<CellData> cellDatas_;
+    
+    string getData(base::bytes_it data_start,
+                         RecordFormats::iterator rf_pos);
+    
+    CellData parseData(base::bytes_it data_start,
+                       RecordFormats& rf);
+    
+    RecordFormats matchBytes(base::bytes_it begin);
     
 };
 
