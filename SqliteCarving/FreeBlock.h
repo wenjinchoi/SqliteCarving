@@ -41,13 +41,16 @@ typedef vector<RecordFormat> RecordFormats;
 class FreeBlock {    
 public:    
     FreeBlock();
+    
     explicit FreeBlock(base::bytes_t& bytes) : freeBlock_(bytes) {}
+    
     FreeBlock(base::bytes_it begin, base::bytes_it end)
       : freeBlock_(begin, end) {}
+    
     ~FreeBlock();
     
     // 返回 FreeBlock 的大小（字节数）
-    size_t size();
+    size_t size() const;
     
     // 用于设置 freeBlock_ 的数据
     void setFreeBlock(base::bytes_t& bytes);

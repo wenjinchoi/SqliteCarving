@@ -176,7 +176,7 @@ bool canParsePartially(base::sql_type sqlType) {
 
 
     
-size_t FreeBlock::size() {
+size_t FreeBlock::size() const {
     return freeBlock_.size();
 }
 
