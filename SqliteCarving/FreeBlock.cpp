@@ -180,6 +180,9 @@ size_t FreeBlock::size() {
     return freeBlock_.size();
 }
 
+void FreeBlock::setFreeBlock(base::bytes_t& bytes) {
+    freeBlock_ = bytes;
+}
     
 void FreeBlock::setSqlTypeTmpl(SqlTypeTmpl& sqlTypeTmpl) {
     sqlTypeTmpl_ = sqlTypeTmpl;

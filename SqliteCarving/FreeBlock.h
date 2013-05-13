@@ -41,7 +41,7 @@ typedef vector<RecordFormat> RecordFormats;
 class FreeBlock {    
 public:    
     FreeBlock();
-    FreeBlock(base::bytes_t& bytes) : freeBlock_(bytes) {}
+    explicit FreeBlock(base::bytes_t& bytes) : freeBlock_(bytes) {}
     FreeBlock(base::bytes_it begin, base::bytes_it end)
       : freeBlock_(begin, end) {}
     ~FreeBlock();
@@ -49,20 +49,23 @@ public:
     // 返回 FreeBlock 的大小（字节数）
     size_t size();
     
+    // 用于设置 freeBlock_ 的数据
+    void setFreeBlock(base::bytes_t& bytes);
+    
     // 设置用于匹配的 SQL Type 模版
     void setSqlTypeTmpl(SqlTypeTmpl& sqlTypeTmpl);
     
-    // 根据设置的模版解析 CellData
+    // 根据设置的模版解析 CellData，有可能包含0到多个 CellData
     // 如果没有设置模版，则返回空数组
     vector<CellData> parseCellDatas();
 
 private:
     base::bytes_t freeBlock_;
     SqlTypeTmpl sqlTypeTmpl_;
-    std::vector<CellData> cellDatas_;
+    vector<CellData> cellDatas_;
     
     string getData(base::bytes_it data_start,
-                         RecordFormats::iterator rf_pos);
+                   RecordFormats::iterator rf_pos);
     
     CellData parseData(base::bytes_it data_start,
                        RecordFormats& rf);
