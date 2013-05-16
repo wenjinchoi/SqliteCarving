@@ -10,12 +10,12 @@
 
 #include "SqliteFileParser.h"
 
-std::ifstream::pos_type filesize(const char* filename)
-{
-    std::ifstream in(filename, std::ifstream::in | std::ifstream::binary);
-    in.seekg(0, std::ifstream::end);
-    return in.tellg();
-}
+//std::ifstream::pos_type filesize(const char* filename)
+//{
+//    std::ifstream in(filename, std::ifstream::in | std::ifstream::binary);
+//    in.seekg(0, std::ifstream::end);
+//    return in.tellg();
+//}
 
 unsigned int sqliteparser::pageSize(std::string sqliteFile) {
     return getValueFromFile<unsigned int>(sqliteFile, 16, 2);

@@ -17,7 +17,26 @@
 #include "Schema.h"
 #include "utils.h"
 
+// New design
+#include "SqliteFile.h"
+
 using namespace std;
+
+void testSqliteFile() {
+    string filepath = "/Users/wenjinchoi/Desktop/samsung_GT-9250-4.2.2-mmssms.db";
+    SqliteFile* sf = new SqliteFile(filepath);
+    if (sf->isSqliteFile()) {
+        cout << "It's Sqlite File." << endl;
+    } else {
+        cout << "It's not Sqlite File." << endl;
+    }
+    
+    SqliteFile::SqlTypes sqltypes =  sf->sqlTypesFor("sms");
+    copy(sqltypes.begin(), sqltypes.end(),
+         ostream_iterator<int>(cout, " "));
+    delete sf;
+    
+}
 
 void testCellParser2() {
     const unsigned char testdata[] = {
@@ -224,15 +243,17 @@ int main(int argc, const char * argv[])
 //    string filename = string("/Users/wenjinchoi/Desktop/samsung_GT-9100-4.0.4_mmssms.db");
 //    string tableName = string("sms");
     
-    if (argc < 3) {
-        cout << "Usage:" << endl;
-        cout << "  SqliteCarving [database path] [table name]" << endl;
-        exit(1);
-    }
+//    if (argc < 3) {
+//        cout << "Usage:" << endl;
+//        cout << "  SqliteCarving [database path] [table name]" << endl;
+//        exit(1);
+//    }
+//    
+//    string filename = string(argv[1]);
+//    string tableName = string(argv[2]);    
+//    testMain(filename, tableName);
+//    return 0;
     
-    string filename = string(argv[1]);
-    string tableName = string(argv[2]);    
-    testMain(filename, tableName);
-    return 0;
+    testSqliteFile();
 }
 

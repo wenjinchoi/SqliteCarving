@@ -21,18 +21,20 @@
 bool SqliteFile::isSqliteFile() {
     unsigned long fileSize = filesize(filepath_.c_str());
     if (fileSize >= kMinFileSize) {
-        Bytes_ptr bytes_ptr;
+        Bytes_ptr bytes_ptr(new base::bytes_t);
         if (kSuccess != this->readPageTo(1, bytes_ptr)) {
             return false;
         }
         std::ostringstream convert;
         copy(bytes_ptr->begin(), bytes_ptr->begin() + 15,
              std::ostream_iterator<base::byte_t>(convert,""));
-        convert << bytes_ptr->back();
         std::string result = convert.str();
+
         if (kSqliteHeader == result) {
             return true;
         } else {
+            std::cout << result << std::endl;
+            std::cout << kSqliteHeader << std::endl;
             return false;
         }
     } else {
@@ -96,9 +98,12 @@ SqliteFile::ReadPageReturnTypes SqliteFile::readPageTo(
             file.seekg(pos, std::ios::beg);
             bytes_ptr->clear();
             bytes_ptr->resize(pageSize);
-            // TODO: 此用法是否安全？
-            file.read((char *)bytes_ptr.get(), pageSize);
+            // TODO: 是否可以优化？例如 back_inserter
+            char *memblock = new char[pageSize];
+            file.read(memblock, pageSize);
             file.close();
+            copy(&memblock[0], &memblock[pageSize], bytes_ptr->begin());
+            delete memblock;
             ret = kSuccess;
         } else {
             ret = kOpenFileError;
@@ -109,6 +114,7 @@ SqliteFile::ReadPageReturnTypes SqliteFile::readPageTo(
 
 bool SqliteFile::isTableExists(std::string& tableName) {
     // TODO
+    return false;
 }
 
 // TODO: not good
@@ -132,10 +138,14 @@ std::string getCreateTableSQLFor(const std::string& dbFilePath,
     
     std::string search_str("CREATE TABLE ");
     search_str += tableName;
-    size_t beg = upperString(schema).find(search_str);
+    size_t beg = upperString(schema).find(upperString(search_str));
     size_t end = upperString(schema).find(";", beg);
     std::string result;
-    result.assign(schema, beg, end - beg);
+    if (beg == std::string::npos) {
+        result = "";
+    } else {
+        result.assign(schema, beg, end - beg);
+    }
     return result;
     
 }
@@ -161,7 +171,7 @@ base::sql_type getSqlTypeFor(std::string column) {
     return sql_type;
 }
 
-SqliteFile::SqlTypes SqliteFile::sqlTypesFor(std::string& tableName) {
+SqliteFile::SqlTypes SqliteFile::sqlTypesFor(const std::string& tableName) {
     std::string createTableSQL = getCreateTableSQLFor(filepath_, tableName);
     createTableSQL.erase(createTableSQL.begin(),
                          createTableSQL.begin() + createTableSQL.find("("));

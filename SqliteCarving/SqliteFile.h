@@ -24,7 +24,6 @@ public:
         kUnknown = -1,
         kSuccess,
         kPageNumOutOfRange,
-        kBeforReadFile,
         kOpenFileError,
     };
     
@@ -52,7 +51,7 @@ public:
     
     bool isTableExists(std::string& tableName);
     
-    SqlTypes sqlTypesFor(std::string& tableName);
+    SqlTypes sqlTypesFor(const std::string& tableName);
     
     ColumnNames columnNamesFor(std::string& tableName);
     
