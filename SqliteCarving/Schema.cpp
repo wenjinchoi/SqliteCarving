@@ -8,10 +8,10 @@
 
 #include "Schema.h"
 
-#include <string>
 #include <algorithm>
 #include <boost/algorithm/string/classification.hpp>
 #include <boost/algorithm/string/split.hpp>
+
 
 base::sql_type SchemaParser::getSqlTypeFor(string column) {
     base::sql_type sql_type = 0;
@@ -34,12 +34,12 @@ base::sql_type SchemaParser::getSqlTypeFor(string column) {
     return sql_type;
 }
 
-std::vector<base::sql_type> SchemaParser::parse() {
+vector<base::sql_type> SchemaParser::parse() {
     string tmp = schema_;
     tmp.erase(tmp.begin(), tmp.begin() + tmp.find("("));
     boost::split(columns_, tmp, boost::is_any_of(","));
     
-    std::vector<string>::iterator pos;
+    vector<string>::iterator pos;
     for (pos = columns_.begin(); pos != columns_.end(); ++pos) {
         base::sql_type sql_type = getSqlTypeFor(*pos);
         sql_type_vec_.push_back(sql_type);
