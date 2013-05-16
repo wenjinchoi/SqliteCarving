@@ -173,8 +173,6 @@ string getStringFor(base::serial_type serialType, base::bytes_t& bytes) {
 bool canParsePartially(base::sql_type sqlType) {
     return sqlType == base::SQL_TYPE_TEXT || sqlType == base::SQL_TYPE_BLOB;
 }
-
-
     
 size_t FreeBlock::size() const {
     return freeBlock_.size();
@@ -207,7 +205,10 @@ vector<CellData> FreeBlock::parseCellDatas() {
     return cellDatas_;
 }
 
-    
+RecordFormats FreeBlock::matchBytes(base::bytes_it begin) {
+    return matchBytesForTmpl(begin, freeBlock_.end(), sqlTypeTmpl_);
+}
+
 string FreeBlock::getData(base::bytes_it data_start,
                           RecordFormats::iterator rf_pos) {
     base::bytes_it data_end = data_start + rf_pos->contentSize;
@@ -218,7 +219,6 @@ string FreeBlock::getData(base::bytes_it data_start,
     base::bytes_t bytes = base::bytes_t(data_start, data_end);
     return getStringFor(rf_pos->serialType, bytes);
 }
-    
 
 CellData FreeBlock::parseData(base::bytes_it data_start,
                               RecordFormats& rf) {
@@ -239,9 +239,4 @@ CellData FreeBlock::parseData(base::bytes_it data_start,
     return result;
 }
 
-    
-RecordFormats FreeBlock::matchBytes(base::bytes_it begin) {
-    return matchBytesForTmpl(begin, freeBlock_.end(), sqlTypeTmpl_);
-}
-    
 } // namespace sqliteparser

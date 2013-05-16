@@ -47,7 +47,7 @@ public:
     FreeBlock(base::bytes_it begin, base::bytes_it end)
       : freeBlock_(begin, end) {}
     
-    ~FreeBlock();
+    // ~FreeBlock();
     
     // 返回 FreeBlock 的大小（字节数）
     size_t size() const;
@@ -67,14 +67,13 @@ private:
     SqlTypeTmpl sqlTypeTmpl_;
     vector<CellData> cellDatas_;
     
+    RecordFormats matchBytes(base::bytes_it begin);
+    
     string getData(base::bytes_it data_start,
                    RecordFormats::iterator rf_pos);
     
     CellData parseData(base::bytes_it data_start,
                        RecordFormats& rf);
-    
-    RecordFormats matchBytes(base::bytes_it begin);
-    
 };
 
 } // namespace sqliteparser
