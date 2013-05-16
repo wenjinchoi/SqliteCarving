@@ -83,7 +83,7 @@ std::string getSchemaFor(const std::string& dbFilePath,
     command += tableName;
     command += "\"";
     
-    char output[1024];
+    char output[4096];
     std::string schema;
     FILE *fp = popen(command.c_str(), "r");
     while(!feof(fp)) {
@@ -102,6 +102,20 @@ std::string getSchemaFor(const std::string& dbFilePath,
     result.assign(schema, beg, end - beg);
     return result;
     
+}
+
+std::string upperString(std::string& str) {
+    std::string upper;
+    std::transform(str.begin(), str.end(),
+                   std::back_inserter(upper), toupper);
+    return upper;
+}
+
+std::ifstream::pos_type filesize(const char* filepath)
+{
+    std::ifstream in(filepath, std::ifstream::in | std::ifstream::binary);
+    in.seekg(0, std::ifstream::end);
+    return in.tellg();
 }
 
 /*

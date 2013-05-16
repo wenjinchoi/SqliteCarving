@@ -29,6 +29,10 @@ void reverse32InByte(void *val);
 std::string getSchemaFor(const std::string& dbFilePath,
                          const std::string& tableName);
 
+std::string upperString(std::string& str);
+
+std::ifstream::pos_type filesize(const char* filepath);
+
 template <typename T>
 T getValueFromMem(char* memblock, int length) {
     T value = T();
