@@ -168,6 +168,42 @@ void testMain(const string& dbFilePath, const string& tableName) {
     }
 }
 
+void testMainMini(const string& dbFilePath, const string& tableName) {
+    string sms_schema = getSchemaFor(dbFilePath, tableName);
+    SchemaParser schema = SchemaParser(sms_schema);
+    vector<base::sql_type> sms_tmpl = schema.parse();
+    sms_tmpl.erase(sms_tmpl.begin());
+    
+    unsigned long sizeOfPages = sqliteparser::sizeOfPages(dbFilePath);
+    
+    int dataCount = 1;
+    for (int i = 1; i <= sizeOfPages; ++i) {
+        base::bytes_t page = sqliteparser::pageAt(dbFilePath, i);
+        if (sqliteparser::isTableLeaf(page)) {
+            vector<base::blockArea> freeblocks =
+            sqliteparser::getFreeBlockAreaList(page);
+            for (vector<base::blockArea>::iterator pos = freeblocks.begin();
+                 pos != freeblocks.end(); ++pos) {
+                vector<sqliteparser::Record> result =
+                    sqliteparser::parseRecordsFromFreeBlock(page.begin(), page.end(), sms_tmpl);
+                if (result.empty()) {
+                    cout << "[Unmatched] No matched item in free block at page " << i
+                    << " Offset: " << pos->begin << "~" << pos->end
+                    << endl;
+                } else {
+                    for (vector<sqliteparser::Record>::iterator r_pos = result.begin(); r_pos != result.end(); ++r_pos) {
+                        cout << "Data " << dataCount++ << ": ";
+                        copy(r_pos->begin(), r_pos->end(),
+                             ostream_iterator<string>(cout, " "));
+                        cout << endl;
+                    }
+                }
+            }
+        }
+        
+    }
+}
+
 
 void test_cmd() {
     string result = getSchemaFor("/Users/wenjinchoi/Desktop/samsung_GT-9100-4.0.4_mmssms.db", "sms");

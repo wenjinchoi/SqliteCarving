@@ -10,6 +10,7 @@
 		0B87BD9517032B3F008DCFD9 /* main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 0B87BD9417032B3F008DCFD9 /* main.cpp */; };
 		0B87BD9717032B3F008DCFD9 /* SqliteCarving.1 in CopyFiles */ = {isa = PBXBuildFile; fileRef = 0B87BD9617032B3F008DCFD9 /* SqliteCarving.1 */; };
 		0B8A0FCB17060AFB00D53A34 /* utils.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 0B8A0FC917060AFB00D53A34 /* utils.cpp */; };
+		0B8C2F1D1745238300FA879C /* SqliteFile.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 0B8C2F1B1745238300FA879C /* SqliteFile.cpp */; };
 		0B907CA4173EA399006A6278 /* FreeBlock.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 0B907CA2173EA399006A6278 /* FreeBlock.cpp */; };
 		0B9B085E171EF01B009EEF8E /* CellParser.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 0B87BD9D17033029008DCFD9 /* CellParser.cpp */; };
 		0B9F123917393EFF00653258 /* Schema.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 0B9F123717393EFF00653258 /* Schema.cpp */; };
@@ -38,6 +39,8 @@
 		0B87BD9E17033029008DCFD9 /* CellParser.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CellParser.h; sourceTree = "<group>"; };
 		0B8A0FC917060AFB00D53A34 /* utils.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = utils.cpp; sourceTree = "<group>"; };
 		0B8A0FCA17060AFB00D53A34 /* utils.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = utils.h; sourceTree = "<group>"; };
+		0B8C2F1B1745238300FA879C /* SqliteFile.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = SqliteFile.cpp; sourceTree = "<group>"; };
+		0B8C2F1C1745238300FA879C /* SqliteFile.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SqliteFile.h; sourceTree = "<group>"; };
 		0B8E30DF171B0C0200661DB5 /* basedef.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = basedef.h; sourceTree = "<group>"; };
 		0B907CA2173EA399006A6278 /* FreeBlock.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = FreeBlock.cpp; sourceTree = "<group>"; };
 		0B907CA3173EA399006A6278 /* FreeBlock.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FreeBlock.h; sourceTree = "<group>"; };
@@ -88,6 +91,8 @@
 				0B907CA3173EA399006A6278 /* FreeBlock.h */,
 				0BB3A7F21711BBA100D0AE56 /* SqliteFileParser.cpp */,
 				0BB3A7F31711BBA100D0AE56 /* SqliteFileParser.h */,
+				0B8C2F1B1745238300FA879C /* SqliteFile.cpp */,
+				0B8C2F1C1745238300FA879C /* SqliteFile.h */,
 				0BB3A7F51711CC2D00D0AE56 /* SqlitePageParser.cpp */,
 				0BB3A7F61711CC2D00D0AE56 /* SqlitePageParser.h */,
 				0B8A0FC917060AFB00D53A34 /* utils.cpp */,
@@ -156,6 +161,7 @@
 				0BB3A7F71711CC2D00D0AE56 /* SqlitePageParser.cpp in Sources */,
 				0B9F123917393EFF00653258 /* Schema.cpp in Sources */,
 				0B907CA4173EA399006A6278 /* FreeBlock.cpp in Sources */,
+				0B8C2F1D1745238300FA879C /* SqliteFile.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
