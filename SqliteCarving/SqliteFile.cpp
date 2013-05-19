@@ -17,6 +17,9 @@
 #include "SqliteFile.h"
 #include "utils.h"
 
+namespace {
+    const std::string kSqliteHeader = "SQLite format 3";
+}
 
 bool SqliteFile::isSqliteFile() {
     unsigned long fileSize = filesize(filepath_.c_str());
@@ -63,7 +66,7 @@ base::bytes_t SqliteFile::pageAt(unsigned long pageNum) const {
     page.clear();
     
     // TODO: 检查路径是否合法
-    // TODO: 检查 pageNum 是否越界
+    // 检查 pageNum 是否越界
     unsigned int pageSize = this->pageSize();
     std::ifstream file;
     file.open(filepath_.c_str(),
@@ -114,12 +117,12 @@ SqliteFile::ReadPageReturnTypes SqliteFile::readPageTo(
 
 bool SqliteFile::isTableExists(std::string& tableName) {
     // TODO
-    return false;
+    return true;
 }
 
-// TODO: not good
-std::string getCreateTableSQLFor(const std::string& dbFilePath,
-                                 const std::string& tableName) {
+std::string getSchema(const std::string& dbFilePath,
+                      const std::string& tableName)
+{
     std::string command = "sqlite3 ";
     command += dbFilePath;
     command += " \".schema ";
@@ -135,7 +138,14 @@ std::string getCreateTableSQLFor(const std::string& dbFilePath,
         }
     }
     pclose(fp);
-    
+    return schema;
+}
+
+// TODO: not good
+std::string getCreateTableSQLFor(const std::string& dbFilePath,
+                                 const std::string& tableName)
+{    
+    std::string schema = getSchema(dbFilePath, tableName);
     std::string search_str("CREATE TABLE ");
     search_str += tableName;
     size_t beg = upperString(schema).find(upperString(search_str));
@@ -188,8 +198,25 @@ SqliteFile::SqlTypes SqliteFile::sqlTypesFor(const std::string& tableName) {
     return sqltypes;
 }
 
-SqliteFile::ColumnNames SqliteFile::columnNamesFor(std::string& tableName)
+SqliteFile::ColumnNames SqliteFile::columnNamesFor(
+    const std::string& tableName)
 {
-    // TODO
+    ColumnNames columnNames;
+    std::string schema = getSchema(filepath_, tableName);
+    schema.erase(schema.begin(), schema.begin() + schema.find("(") + 1);
+    schema.erase(schema.begin() + schema.find(")"), schema.end());
+    
+    std::vector<std::string> columns;
+    // split by ","
+    boost::split(columns, schema, boost::is_any_of(","));
+    
+    for (std::vector<std::string>::iterator pos = columns.begin();
+         pos < columns.end(); ++pos)
+    {
+        std::vector<std::string> strs;
+        boost::split(strs, *pos, boost::is_any_of(" "));
+        columnNames.push_back(strs[0]);
+    }
+    return columnNames;
 }
 

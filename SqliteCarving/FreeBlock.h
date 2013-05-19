@@ -29,6 +29,7 @@ typedef map<base::serial_type, base::content_size> recordFormatMap;
     
 typedef vector<base::sql_type> SqlTypeTmpl;
 typedef vector<string> CellData;
+typedef vector<CellData> CellDatas;
     
 struct RecordFormat {
     long serialType;
@@ -39,24 +40,21 @@ struct RecordFormat {
 typedef vector<RecordFormat> RecordFormats;
     
 class FreeBlock {    
-public:    
-    FreeBlock();
-    
+public:
     explicit FreeBlock(base::bytes_t& bytes) : freeBlock_(bytes) {}
     
     FreeBlock(base::bytes_it begin, base::bytes_it end)
-      : freeBlock_(begin, end) {}
-    
-    // ~FreeBlock();
+      : freeBlock_(begin, end)
+    { }
     
     // 返回 FreeBlock 的大小（字节数）
     size_t size() const;
     
     // 用于设置 freeBlock_ 的数据
-    void setFreeBlock(base::bytes_t& bytes);
+    // void setFreeBlock(base::bytes_t& bytes);
     
     // 设置用于匹配的 SQL Type 模版
-    void setSqlTypeTmpl(SqlTypeTmpl& sqlTypeTmpl);
+    void setSqlTypeTmpl(const SqlTypeTmpl& sqlTypeTmpl);
     
     // 根据设置的模版解析 CellData，有可能包含0到多个 CellData
     // 如果没有设置模版，则返回空数组

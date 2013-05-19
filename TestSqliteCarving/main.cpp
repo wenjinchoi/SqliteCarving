@@ -6,13 +6,13 @@
 //  Copyright (c) 2013 wenjin choi. All rights reserved.
 //
 
+#define GTEST_USE_OWN_TR1_TUPLE 1
+#include <gtest/gtest.h>
 #include <iostream>
 
-int main(int argc, const char * argv[])
+int main(int argc, char * argv[])
 {
-
-    // insert code here...
-    std::cout << "Hello, World!\n";
-    return 0;
+    testing::InitGoogleTest(&argc, argv);
+    return RUN_ALL_TESTS();
 }
 

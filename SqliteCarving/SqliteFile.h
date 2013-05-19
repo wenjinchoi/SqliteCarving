@@ -28,9 +28,8 @@ public:
     };
     
     const int kMinFileSize = 512;
-    const std::string kSqliteHeader = "SQLite format 3";
     
-    explicit SqliteFile(std::string& filepath)
+    explicit SqliteFile(const std::string& filepath)
         : filepath_(filepath)
     { }
     
@@ -41,10 +40,10 @@ public:
     unsigned long numOfPages() const;
     
     // 同时提供了两个方法
-    // 此方法不能返回错误码
+    // 此方法不能返回错误码，将废弃
     base::bytes_t pageAt(unsigned long pageNum) const;
     
-    // 尽量用这个方法
+    // 建议用这个方法
     ReadPageReturnTypes readPageTo(unsigned long pageNum,
                                    Bytes_ptr bytes_ptr);
     
@@ -53,7 +52,7 @@ public:
     
     SqlTypes sqlTypesFor(const std::string& tableName);
     
-    ColumnNames columnNamesFor(std::string& tableName);
+    ColumnNames columnNamesFor(const std::string& tableName);
     
 private:
     

@@ -178,11 +178,13 @@ size_t FreeBlock::size() const {
     return freeBlock_.size();
 }
 
+/*
 void FreeBlock::setFreeBlock(base::bytes_t& bytes) {
     freeBlock_ = bytes;
 }
+*/
     
-void FreeBlock::setSqlTypeTmpl(SqlTypeTmpl& sqlTypeTmpl) {
+void FreeBlock::setSqlTypeTmpl(const SqlTypeTmpl& sqlTypeTmpl) {
     sqlTypeTmpl_ = sqlTypeTmpl;
 }
 
