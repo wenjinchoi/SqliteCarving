@@ -21,6 +21,8 @@ namespace {
     const std::string kSqliteHeader = "SQLite format 3";
 }
 
+namespace sp {
+
 bool SqliteFile::isSqliteFile() {
     unsigned long fileSize = filesize(filepath_.c_str());
     if (fileSize >= kMinFileSize) {
@@ -55,8 +57,12 @@ unsigned long SqliteFile::numOfPages() const {
     if (size != 0) {
         return size;
     } else {
-        unsigned long num = filesize(filepath_.c_str())/pageSize();
-        return num;
+        if (pageSize() == 0) {
+            return 0;
+        } else {
+            unsigned long num = filesize(filepath_.c_str())/pageSize();
+            return num;
+        }
     }
 }
 
@@ -220,3 +226,4 @@ SqliteFile::ColumnNames SqliteFile::columnNamesFor(
     return columnNames;
 }
 
+} // namespace sp

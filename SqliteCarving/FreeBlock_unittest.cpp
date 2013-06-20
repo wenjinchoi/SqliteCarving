@@ -23,7 +23,7 @@ TEST(FreeBlockTest, SizeBase)
     };
     // "1 10086 [NULL] 1357005600 [NULL] 0 255 1 [NULL] [NULL] Record 1 [NULL] 0 0 [NULL] [Missed]"
     base::bytes_t testBlock = base::bytes_t(&testdata[0], &testdata[43]);
-    sqliteparser2::FreeBlock *fb = new sqliteparser2::FreeBlock(testBlock);
+    sp::FreeBlock *fb = new sp::FreeBlock(testBlock);
     EXPECT_EQ(43, fb->size());
     delete fb;
 }
@@ -31,7 +31,7 @@ TEST(FreeBlockTest, SizeBase)
 TEST(FreeBlockTest, SizeZero)
 {
     base::bytes_t testBlock;
-    sqliteparser2::FreeBlock *fb = new sqliteparser2::FreeBlock(testBlock);
+    sp::FreeBlock *fb = new sp::FreeBlock(testBlock);
     EXPECT_EQ(0, fb->size());
     delete fb;
 }
@@ -40,7 +40,7 @@ TEST(FreeBlockTest, SizeOne)
 {
     base::bytes_t testBlock;
     testBlock.push_back(01);
-    sqliteparser2::FreeBlock *fb = new sqliteparser2::FreeBlock(testBlock);
+    sp::FreeBlock *fb = new sp::FreeBlock(testBlock);
     EXPECT_EQ(1, fb->size());
     delete fb;
 }

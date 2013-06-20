@@ -17,6 +17,7 @@
 #include "SqlitePage.h"
 #include "FreeBlock.h"
 
+namespace sp {
 
 class SqliteParser {
 public:
@@ -36,18 +37,21 @@ public:
     void setTableName(const std::string& tableName);
     
     ParseReturnType parseDeletedDatas();
-    sqliteparser2::CellDatas getDatas();
+    
+    sp::CellDatas getDatas();
     
 private:
-    sqliteparser2::CellDatas parseFreeBlocks(SqlitePage::BlockAreas& freeBlocks);
+    sp::CellDatas parseFreeBlocks(SqlitePage::BlockAreas& freeBlocks);
     
     SqliteFile_ptr sqliteFile_;
     SqliteFile::Bytes_ptr pageContent_ptr_;
     SqlitePage_ptr currentPage_ptr_;
     std::string tableName_;
     
-    sqliteparser2::CellDatas cellDatas_;
+    sp::CellDatas cellDatas_;
     
 };
+    
+} // namespace sp
 
 #endif /* defined(__SqliteCarving__SqliteParser__) */

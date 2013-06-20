@@ -13,6 +13,8 @@
 
 #include "basedef.h"
 
+namespace sp {
+
 class SqlitePage {
 public:
     enum PageType {
@@ -71,5 +73,7 @@ private:
     base::bytes_t page_;
     
 };
+    
+} // namespace sp
 
 #endif /* defined(__SqliteCarving__SqlitePage__) */

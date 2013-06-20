@@ -14,6 +14,8 @@
 
 #include "basedef.h"
 
+namespace sp {
+
 class SqliteFile {
 public:
     typedef std::vector<base::sql_type> SqlTypes;
@@ -59,5 +61,7 @@ private:
     std::string filepath_;
 
 };
+
+} // namespace sp
 
 #endif /* defined(__SqliteCarving__SqliteFile__) */

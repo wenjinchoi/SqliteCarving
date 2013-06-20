@@ -21,7 +21,7 @@ using std::string;
 using std::vector;
 using std::map;
 
-namespace sqliteparser2 {
+namespace sp {
 
 // FIXIT: 需要移走到其他地方
 typedef map<base::serial_type, base::sql_type> sTypeSqlTypeMap;
@@ -74,6 +74,6 @@ private:
                        RecordFormats& rf);
 };
 
-} // namespace sqliteparser2
+} // namespace sp
 
 #endif /* defined(__SqliteCarving__FreeBlock__) */

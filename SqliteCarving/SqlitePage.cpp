@@ -10,6 +10,8 @@
 
 #include "utils.h"
 
+namespace sp {
+    
 namespace {
 const base::byte_t kByteOfIndexInternalNode  = 0x02;
 const base::byte_t kByteOfIndexLeafNode      = 0x0A;
@@ -127,3 +129,5 @@ base::bytes_it SqlitePage::cellPointersOffset() {
     }
     return cellPtrsOffset;
 }
+    
+} // namespace sp

@@ -8,6 +8,7 @@
 
 #include "SqliteParser.h"
 
+namespace sp {
 
 void SqliteParser::setSqliteFile(const std::string& filepath)
 {
@@ -35,7 +36,7 @@ SqliteParser::ParseReturnType SqliteParser::parseDeletedDatas() {
         sqliteFile_->readPageTo(pageNum, pageContent_ptr_);
         currentPage_ptr_ = SqlitePage_ptr(new SqlitePage(*pageContent_ptr_));
         SqlitePage::BlockAreas freeBlocks = currentPage_ptr_->freeBlocks();
-        sqliteparser2::CellDatas cellDatas = parseFreeBlocks(freeBlocks);
+        sp::CellDatas cellDatas = parseFreeBlocks(freeBlocks);
         cellDatas_.insert(cellDatas_.end(),
                           cellDatas.begin(), cellDatas.end());
     }
@@ -47,30 +48,31 @@ SqliteParser::ParseReturnType SqliteParser::parseDeletedDatas() {
     }
 }
 
-sqliteparser2::CellDatas SqliteParser::getDatas()
+sp::CellDatas SqliteParser::getDatas()
 {
     return cellDatas_;
 }
 
 // TODO: CellDatas 需要重新定义 
-sqliteparser2::CellDatas SqliteParser::parseFreeBlocks(
+sp::CellDatas SqliteParser::parseFreeBlocks(
     SqlitePage::BlockAreas& freeBlocks)
 {
-    sqliteparser2::CellDatas result;
+    sp::CellDatas result;
     for (SqlitePage::BlockAreas::iterator pos = freeBlocks.begin();
          pos != freeBlocks.end(); ++pos)
     {
-        sqliteparser2::FreeBlock *freeblock =
-            new sqliteparser2::FreeBlock(pageContent_ptr_->begin() + pos->begin, pageContent_ptr_->begin() + pos->end);
+        sp::FreeBlock *freeblock =
+            new sp::FreeBlock(pageContent_ptr_->begin() + pos->begin, pageContent_ptr_->begin() + pos->end);
         
         SqliteFile::SqlTypes tmpl = sqliteFile_->sqlTypesFor(tableName_);
         tmpl.erase(tmpl.begin()); // 第一列的数据会被覆盖，移除之
         freeblock->setSqlTypeTmpl(tmpl);
         
-        sqliteparser2::CellDatas datas = freeblock->parseCellDatas();
+        sp::CellDatas datas = freeblock->parseCellDatas();
         result.insert(result.end(), datas.begin(), datas.end());
         delete freeblock;
     }
     return result;
 }
 
+} // namespace sp

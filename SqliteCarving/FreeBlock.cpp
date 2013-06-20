@@ -11,7 +11,7 @@
 
 #include <sstream>
 
-namespace sqliteparser2 {
+namespace sp {
 
 // FIXIT: 以下 Map 要找个适合的地方放置
 recordFormatMap getRecordFormatMap() {
@@ -241,4 +241,4 @@ CellData FreeBlock::parseData(base::bytes_it data_start,
     return result;
 }
 
-} // namespace sqliteparser2
+} // namespace sp
